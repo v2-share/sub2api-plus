@@ -97,7 +97,7 @@ preserves the leading `v` and replaces only `+` with `-` to produce the
 OCI-compatible image tag. For example:
 
 ```text
-Git/GitHub: v0.2.4+custom.004
+Git/GitHub: v0.2.4-fork.1
 GHCR:       ghcr.io/luckykuang/sub2api-plus:v0.2.4-custom.004
 ```
 

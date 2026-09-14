@@ -9,7 +9,7 @@ derives the OCI image tag by preserving the leading `v` and replacing only
 `+` with `-`.
 
 ```text
-Git/GitHub: v0.2.4+custom.004
+Git/GitHub: v0.2.4-fork.1
 GHCR:       ghcr.io/luckykuang/sub2api-plus:v0.2.4-custom.004
 ```
 
@@ -530,13 +530,13 @@ reported by `list-versions`; the installer accepts only the canonical
 `vX.Y.Z+custom.NNN` release format.
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/LuckyKuang/sub2api-plus/main/deploy/install.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash
 ```
 
 List available published versions:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/LuckyKuang/sub2api-plus/main/deploy/install.sh | bash -s -- list-versions
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | bash -s -- list-versions
 ```
 
 Fresh-install or switch an existing installation to the shown exact version.
@@ -544,37 +544,37 @@ Replace the immutable tag with another value reported by `list-versions` when
 needed:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/LuckyKuang/sub2api-plus/main/deploy/install.sh | sudo bash -s -- install --version 'v0.2.4+custom.004'
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- install --version 'v0.2.4-fork.1'
 ```
 
 Roll back an existing binary installation to an earlier published version:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/LuckyKuang/sub2api-plus/main/deploy/install.sh | sudo bash -s -- rollback 'v0.2.4+custom.003'
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- rollback 'v0.2.4+custom.003'
 ```
 
 Upgrade to the latest release:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/LuckyKuang/sub2api-plus/main/deploy/install.sh | sudo bash -s -- upgrade
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- upgrade
 ```
 
 Remove the service and binary while preserving `/etc/sub2api`:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/LuckyKuang/sub2api-plus/main/deploy/install.sh | sudo bash -s -- uninstall --yes
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- uninstall --yes
 ```
 
 Also remove `/etc/sub2api`. Back up required configuration first:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/LuckyKuang/sub2api-plus/main/deploy/install.sh | sudo bash -s -- uninstall --yes --purge
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- uninstall --yes --purge
 ```
 
 For a downloaded `install.sh`, invoke one operation at a time. For example:
 
 ```bash
-sudo ./install.sh install --version 'v0.2.4+custom.004'
+sudo ./install.sh install --version 'v0.2.4-fork.1'
 ```
 
 Roll back a downloaded-script installation one operation at a time:

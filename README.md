@@ -58,13 +58,13 @@ uninstallation. Published binary tags use the immutable
 `vX.Y.Z+custom.NNN` format.
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/LuckyKuang/sub2api-plus/main/deploy/install.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash
 ```
 
 List published versions:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/LuckyKuang/sub2api-plus/main/deploy/install.sh | bash -s -- list-versions
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | bash -s -- list-versions
 ```
 
 Install or switch to an exact published version. The command below is directly
@@ -72,25 +72,25 @@ usable; replace its immutable tag with another value returned by
 `list-versions` when needed:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/LuckyKuang/sub2api-plus/main/deploy/install.sh | sudo bash -s -- install --version 'v0.2.4+custom.004'
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- install --version 'v0.2.4-fork.1'
 ```
 
 Roll back an existing binary installation to an earlier published version:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/LuckyKuang/sub2api-plus/main/deploy/install.sh | sudo bash -s -- rollback 'v0.2.4+custom.003'
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- rollback 'v0.2.4+custom.003'
 ```
 
 Remove the service and binary while preserving `/etc/sub2api`:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/LuckyKuang/sub2api-plus/main/deploy/install.sh | sudo bash -s -- uninstall --yes
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- uninstall --yes
 ```
 
 Also remove `/etc/sub2api`. Review backups first; this cannot be undone:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/LuckyKuang/sub2api-plus/main/deploy/install.sh | sudo bash -s -- uninstall --yes --purge
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- uninstall --yes --purge
 ```
 
 Then open `http://YOUR_SERVER_IP:8080` and complete the setup wizard.

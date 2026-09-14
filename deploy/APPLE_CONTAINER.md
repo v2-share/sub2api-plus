@@ -266,8 +266,8 @@ the release workflow preserves the leading `v` and replaces only `+` with
 `-`. The current mapping is:
 
 ```text
-Git/GitHub:         v0.2.4+custom.004
-Application:        0.2.4+custom.004
+Git/GitHub:         v0.2.4-fork.1
+Application:        0.2.4-fork.1
 Apple/OCI image:    ghcr.io/luckykuang/sub2api-plus:v0.2.4-custom.004
 ```
 
@@ -275,7 +275,7 @@ Use the following values when building or publishing this OCI image:
 
 ```bash
 docker build \
-  --build-arg VERSION=0.2.4+custom.004 \
+  --build-arg VERSION=0.2.4-fork.1 \
   --tag ghcr.io/luckykuang/sub2api-plus:v0.2.4-custom.004 \
   .
 ```

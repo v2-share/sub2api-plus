@@ -1,124 +1,30 @@
-name: Release
+name: Release (fork)
 
 on:
   push:
     tags:
-      - "v*"
+      - "v*-fork.*"
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing tag to publish"
+        description: "Existing fork tag to publish"
         required: true
         type: string
 
 permissions:
   contents: read
 
-# GoReleaser also updates the shared latest, major, and minor GHCR tags.
-# Serialize releases so simultaneous tag pushes cannot race on those manifests.
+# Serialize fork releases so simultaneous tag pushes cannot race on the
+# shared release assets.
 concurrency:
-  group: release-publish
+  group: release-fork
   cancel-in-progress: false
 
 jobs:
-  verify:
-    name: Verify release provenance
-    # The upstream Plus release pipeline only runs in its own repository.
-    if: github.repository == 'LuckyKuang/sub2api-plus'
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-    steps:
-      - name: Check out the release tag
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-          ref: ${{ inputs.tag || github.ref }}
-
-      - name: Resolve and verify release provenance
-        id: provenance
-        env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-          INPUT_TAG: ${{ inputs.tag }}
-        run: |
-          set -euo pipefail
-          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
-            TAG_NAME="$INPUT_TAG"
-          else
-            TAG_NAME="${GITHUB_REF#refs/tags/}"
-          fi
-
-          if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+\+custom\.[0-9]{3}$ ]]; then
-            echo "Invalid release tag: $TAG_NAME" >&2
-            exit 1
-          fi
-
-          TAG_REF="refs/tags/$TAG_NAME"
-          git show-ref --verify --quiet "$TAG_REF" || {
-            echo "Tag does not exist: $TAG_NAME" >&2
-            exit 1
-          }
-          if [ "$(git cat-file -t "$TAG_REF")" != "tag" ]; then
-            echo "Release tag must be annotated: $TAG_NAME" >&2
-            exit 1
-          fi
-
-          TARGET_SHA="$(git rev-parse "$TAG_REF^{}")"
-          if [ "$TARGET_SHA" != "$(git rev-parse HEAD)" ]; then
-            echo "Checked-out commit does not match $TAG_NAME" >&2
-            exit 1
-          fi
-
-          EXPECTED_SUBJECT="Sub2API Plus $TAG_NAME"
-          TAG_SUBJECT="$(git for-each-ref --format='%(contents:subject)' "$TAG_REF")"
-          if [ "$TAG_SUBJECT" != "$EXPECTED_SUBJECT" ]; then
-            echo "Tag subject must be: $EXPECTED_SUBJECT" >&2
-            exit 1
-          fi
-
-          NOTES_FILE="$RUNNER_TEMP/release-provenance-notes.md"
-          git for-each-ref --format='%(contents)' "$TAG_REF" > "$NOTES_FILE"
-          git fetch --no-tags origin \
-            "+refs/heads/$DEFAULT_BRANCH:refs/remotes/origin/$DEFAULT_BRANCH"
-          git merge-base --is-ancestor "$TARGET_SHA" "origin/$DEFAULT_BRANCH" || {
-            echo "$TAG_NAME target is not contained by origin/$DEFAULT_BRANCH" >&2
-            exit 1
-          }
-
-          {
-            echo "tag=$TAG_NAME"
-            echo "target=$TARGET_SHA"
-            echo "notes_file=$NOTES_FILE"
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Verify release metadata and notes
-        run: |
-          python tools/check_release.py \
-            --tag "${{ steps.provenance.outputs.tag }}" \
-            --notes-file "${{ steps.provenance.outputs.notes_file }}" \
-            --require-status planned
-
-      - name: Verify exact main workflow evidence
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          python tools/workflow_provenance.py \
-            --repository "$GITHUB_REPOSITORY" \
-            --branch "${{ github.event.repository.default_branch }}" \
-            --sha "${{ steps.provenance.outputs.target }}"
-
   release:
     name: Build and publish
-    # The upstream Plus release pipeline only runs in its own repository.
-    if: github.repository == 'LuckyKuang/sub2api-plus'
-    needs: verify
+    if: github.repository == 'v2-share/sub2api-plus'
     runs-on: ubuntu-latest
-    # release-cli requires this environment to disable administrator bypass,
-    # have no blocking approval gate, and allow only v*+custom.* tags.
-    environment:
-      name: release
     permissions:
       contents: write
       packages: write
@@ -130,20 +36,20 @@ jobs:
           persist-credentials: false
           ref: ${{ inputs.tag || github.ref }}
 
-      - name: Resolve and verify release metadata
+      - name: Resolve and verify release tag
         id: metadata
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INPUT_TAG: ${{ inputs.tag }}
         run: |
+          set -euo pipefail
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             TAG_NAME="$INPUT_TAG"
           else
             TAG_NAME="${GITHUB_REF#refs/tags/}"
           fi
 
-          if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+\+custom\.[0-9]{3}$ ]]; then
-            echo "Invalid release tag: $TAG_NAME" >&2
+          if ! [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-fork\.[0-9]+$ ]]; then
+            echo "Invalid fork release tag: $TAG_NAME" >&2
             exit 1
           fi
 
@@ -161,18 +67,8 @@ jobs:
             exit 1
           fi
 
-          EXPECTED_SUBJECT="Sub2API Plus $TAG_NAME"
-          TAG_SUBJECT="$(git for-each-ref --format='%(contents:subject)' "$TAG_REF")"
-          if [ "$TAG_SUBJECT" != "$EXPECTED_SUBJECT" ]; then
-            echo "Tag subject must be: $EXPECTED_SUBJECT" >&2
-            exit 1
-          fi
-
-          NOTES_FILE="$RUNNER_TEMP/release-notes.md"
           BODY_FILE="$RUNNER_TEMP/release-notes-body.md"
-          git for-each-ref --format='%(contents)' "$TAG_REF" > "$NOTES_FILE"
           git for-each-ref --format='%(contents:body)' "$TAG_REF" > "$BODY_FILE"
-
           DELIMITER="TAG_MESSAGE_$(python -c 'import uuid; print(uuid.uuid4().hex)')"
           while grep -Fqx "$DELIMITER" "$BODY_FILE"; do
             DELIMITER="TAG_MESSAGE_$(python -c 'import uuid; print(uuid.uuid4().hex)')"
@@ -190,20 +86,8 @@ jobs:
             echo "tag=$TAG_NAME"
             echo "version=$VERSION"
             echo "docker_tag=$DOCKER_TAG"
-            echo "notes_file=$NOTES_FILE"
             echo "owner_lower=$OWNER_LOWER"
-            if gh release view "$TAG_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-              echo "goreleaser_args=release --clean --skip=validate,announce"
-            else
-              echo "goreleaser_args=release --clean --skip=validate"
-            fi
           } >> "$GITHUB_OUTPUT"
-
-      - name: Verify release metadata and notes
-        run: |
-          python tools/check_release.py \
-            --tag "${{ steps.metadata.outputs.tag }}" \
-            --notes-file "${{ steps.metadata.outputs.notes_file }}"
 
       - name: Set up pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -230,16 +114,6 @@ jobs:
           check-latest: false
           cache-dependency-path: backend/go.sum
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Resolve GoReleaser version
         id: goreleaser-version
         run: |
@@ -247,11 +121,11 @@ jobs:
           test -n "$VERSION"
           echo "version=v${VERSION#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Publish release, artifacts, and images
+      - name: Build and upload release assets
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7
         with:
           version: ${{ steps.goreleaser-version.outputs.version }}
-          args: ${{ steps.metadata.outputs.goreleaser_args }}
+          args: release --clean --skip=validate,announce
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -260,6 +134,9 @@ jobs:
           GITHUB_REPO_NAME: ${{ github.event.repository.name }}
           DOCKER_TAG_VERSION: ${{ steps.metadata.outputs.docker_tag }}
           DOCKERHUB_USERNAME: skip
+          # Container images stay opt-in for fork releases; the config renders
+          # the GHCR entries only when this is not "true".
+          SKIP_GHCR_IMAGES: "true"
 
       - name: Publish pricing release assets
         env:
