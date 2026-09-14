@@ -137,7 +137,7 @@ def pull_request(
         base_oid=base,
         head_branch="release/candidate",
         head_oid=head,
-        head_owner="LuckyKuang",
+        head_owner="v2-share",
         merge_state="CLEAN",
         merge_commit=merge,
         auto_merge_enabled=auto_merge,
@@ -157,7 +157,7 @@ class ValidationProofTest(unittest.TestCase):
             "head": {
                 "ref": "release/candidate",
                 "sha": HEAD,
-                "repo": {"owner": {"login": "LuckyKuang"}},
+                "repo": {"owner": {"login": "v2-share"}},
             },
             "mergeable_state": "clean",
             "merge_commit_sha": MERGE,
