@@ -75,6 +75,29 @@ var schedulerNeutralExtraKeys = map[string]struct{}{
 
 const postgresParameterBatchSize = 50000
 
+// codexFingerprintSeedCanonicalPattern 与 codexFingerprintNilSeed 用于 SQL 层
+// 原子校验系统托管的指纹种子 (codex_fingerprint_seed), 与 service 层的
+// canonicalCodexFingerprintSeed 语义一致。
+const codexFingerprintSeedCanonicalPattern = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+const codexFingerprintNilSeed = "00000000-0000-0000-0000-000000000000"
+
+func codexFingerprintSeedValidSQL(extraExpr string) string {
+	value := "(" + extraExpr + " ->> 'codex_fingerprint_seed')"
+	return "(" + value + " ~ '" + codexFingerprintSeedCanonicalPattern + "' AND " + value + " <> '" + codexFingerprintNilSeed + "')"
+}
+
+// ensureCodexFingerprintSeedSQL 在 JSONB 合并表达式中原子保证种子存在:
+// OpenAI OAuth 账号已有合法种子则保留, 否则生成随机 UUID 种子。
+// 仅当本次 key 级更新显式开启了收敛 (ShouldEnsureCodexFingerprintSeedForExtraUpdates)
+// 时才包裹该表达式, 避免无谓的写放大。
+func ensureCodexFingerprintSeedSQL(extraExpr string) string {
+	return "CASE WHEN platform = 'openai' AND type = 'oauth' THEN " +
+		"jsonb_set(" + extraExpr + ", '{codex_fingerprint_seed}', " +
+		"CASE WHEN " + codexFingerprintSeedValidSQL("extra") +
+		" THEN to_jsonb(extra ->> 'codex_fingerprint_seed') ELSE to_jsonb(gen_random_uuid()::text) END, true) " +
+		"ELSE " + extraExpr + " END"
+}
+
 // NewAccountRepository 创建账户仓储实例。
 // 这是对外暴露的构造函数，返回接口类型以便于依赖注入。
 func NewAccountRepository(client *dbent.Client, sqlDB *sql.DB, schedulerCache service.SchedulerCache) service.AccountRepository {
@@ -168,6 +191,9 @@ func createAccountRecord(ctx context.Context, client *dbent.Client, account *ser
 	if account == nil {
 		return service.ErrAccountNilInput
 	}
+	// 系统托管的指纹种子兜底注入: 绕过 service 创建管线的调用方
+	// (CRS 同步等) 也能在开启收敛时获得随机种子。
+	account.Extra = service.EnsureCodexFingerprintSeedForCreate(account.Platform, account.Type, account.Extra)
 	if err := account.NormalizeCodexFingerprintMode(); err != nil {
 		return err
 	}
@@ -491,6 +517,9 @@ func (r *accountRepository) updateAccount(
 	if account == nil {
 		return nil
 	}
+	// 系统托管的指纹种子兜底保留/注入: service 层已处理的路径是幂等操作,
+	// 绕过 service 的路径 (CRS 同步等) 至少不会丢失已持有种子的收敛身份。
+	account.Extra = service.EnsureCodexFingerprintSeedForUpdate(account, account.Extra)
 	if err := account.NormalizeCodexFingerprintMode(); err != nil {
 		return err
 	}
@@ -2563,6 +2592,9 @@ func (r *accountRepository) UpdateExtra(ctx context.Context, id int64, updates m
 		}
 	}
 	extraExpression := "COALESCE(extra, '{}'::jsonb) || $1::jsonb"
+	if service.ShouldEnsureCodexFingerprintSeedForExtraUpdates(updates) {
+		extraExpression = ensureCodexFingerprintSeedSQL(extraExpression)
+	}
 	result, err := client.ExecContext(
 		ctx,
 		"UPDATE accounts SET extra = "+extraExpression+", updated_at = NOW() WHERE id = $2 AND deleted_at IS NULL",
@@ -2760,6 +2792,9 @@ func (r *accountRepository) BulkUpdate(ctx context.Context, ids []int64, updates
 			if ollamaCloudUsageSnapshotClearRequested(updates.Extra) {
 				extraExpression = "(" + extraExpression + ") - 'ollama_cloud_usage_snapshot'"
 			}
+		}
+		if service.ShouldEnsureCodexFingerprintSeedForExtraUpdates(updates.Extra) {
+			extraExpression = ensureCodexFingerprintSeedSQL(extraExpression)
 		}
 		eligibleAccount := "platform IN (" + ollamaCloudUsagePlatformsSQL + ") AND type = 'apikey'"
 		groupIdentityChanged := ""

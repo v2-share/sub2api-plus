@@ -252,6 +252,7 @@ func TestOpenAIGatewayService_OAuthMessagesBridgeDoesNotInjectDefaultInstruction
 		},
 		Extra: map[string]any{
 			CodexFingerprintModeExtraKey: string(codexFingerprintSession),
+			codexFingerprintSeedExtraKey: "55555555-5555-4555-8555-555555555555",
 		},
 		Status:      StatusActive,
 		Schedulable: true,
@@ -836,6 +837,7 @@ func TestOpenAIGatewayService_OAuthPassthrough_CompactUsesJSONAndKeepsNonStreami
 		Extra: map[string]any{
 			"openai_passthrough":         true,
 			CodexFingerprintModeExtraKey: "full",
+			codexFingerprintSeedExtraKey: "66666666-6666-4666-8666-666666666666",
 			"openai_device_id":           "owner-installation",
 		},
 		Status:         StatusActive,
@@ -856,7 +858,7 @@ func TestOpenAIGatewayService_OAuthPassthrough_CompactUsesJSONAndKeepsNonStreami
 	require.Equal(t, "application/json", upstream.lastReq.Header.Get("Accept"))
 	require.Equal(t, codexCLIVersion, upstream.lastReq.Header.Get("Version"))
 	require.NotEmpty(t, upstream.lastReq.Header.Get("Session_Id"))
-	require.NotEqual(t, resolveConvergedSessionID(account), upstream.lastReq.Header.Get("Session_Id"))
+	require.NotEqual(t, resolveConvergedSessionID(testSeedOf(t, account)), upstream.lastReq.Header.Get("Session_Id"))
 	require.Equal(t, "owner-installation", upstream.lastReq.Header.Get("x-codex-installation-id"))
 	require.Equal(t, "owner-installation", gjson.GetBytes(upstream.lastBody, "client_metadata.x-codex-installation-id").String())
 	require.False(t, gjson.GetBytes(upstream.lastBody, "client_metadata.session_id").Exists())
@@ -900,6 +902,7 @@ func TestOpenAIGatewayService_OAuthPassthrough_NativeCompactUsesFullModeAndPlusC
 		Extra: map[string]any{
 			"openai_passthrough":         true,
 			CodexFingerprintModeExtraKey: "session",
+			codexFingerprintSeedExtraKey: "77777777-7777-4777-8777-777777777777",
 			"openai_device_id":           "native-owner-installation",
 		},
 		Status:         StatusActive,
@@ -919,7 +922,7 @@ func TestOpenAIGatewayService_OAuthPassthrough_NativeCompactUsesFullModeAndPlusC
 	require.Equal(t, cacheIdentity, upstream.lastReq.Header.Get("session_id"))
 	require.Equal(t, "native-owner-installation", upstream.lastReq.Header.Get("x-codex-installation-id"))
 	require.Equal(t, "native-owner-installation", gjson.GetBytes(upstream.lastBody, "client_metadata.x-codex-installation-id").String())
-	require.Equal(t, resolveConvergedSessionID(account), gjson.GetBytes(upstream.lastBody, "client_metadata.session_id").String())
+	require.Equal(t, resolveConvergedSessionID(testSeedOf(t, account)), gjson.GetBytes(upstream.lastBody, "client_metadata.session_id").String())
 	require.NotEmpty(t, gjson.GetBytes(upstream.lastBody, "client_metadata.thread_id").String())
 	require.Equal(t, upstream.lastReq.Header.Get("thread-id"), upstream.lastReq.Header.Get("x-client-request-id"))
 	require.NotEqual(t, "native-client-thread", upstream.lastReq.Header.Get("thread-id"))

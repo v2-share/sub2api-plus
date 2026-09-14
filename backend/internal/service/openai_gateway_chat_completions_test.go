@@ -520,6 +520,7 @@ func TestForwardAsChatCompletions_OAuthConvergesFingerprintBeforePlusCacheAuthor
 		},
 		Extra: map[string]any{
 			CodexFingerprintModeExtraKey: "session",
+			codexFingerprintSeedExtraKey: "44444444-4444-4444-8444-444444444444",
 			"openai_device_id":           "chat-owner-installation",
 		},
 	}
@@ -535,7 +536,7 @@ func TestForwardAsChatCompletions_OAuthConvergesFingerprintBeforePlusCacheAuthor
 	require.Equal(t, cacheIdentity, upstream.lastReq.Header.Get("session_id"))
 	require.Equal(t, "chat-owner-installation", upstream.lastReq.Header.Get("x-codex-installation-id"))
 	require.Equal(t, "chat-owner-installation", gjson.GetBytes(upstream.lastBody, "client_metadata.x-codex-installation-id").String())
-	require.Equal(t, resolveConvergedSessionID(account), gjson.GetBytes(upstream.lastBody, "client_metadata.session_id").String())
+	require.Equal(t, resolveConvergedSessionID(testSeedOf(t, account)), gjson.GetBytes(upstream.lastBody, "client_metadata.session_id").String())
 	require.Equal(t, upstream.lastReq.Header.Get("thread-id"), upstream.lastReq.Header.Get("x-client-request-id"))
 }
 

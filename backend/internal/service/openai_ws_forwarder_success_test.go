@@ -976,6 +976,7 @@ func TestOpenAIGatewayService_Forward_WSv2_OAuthStoreFalseByDefault(t *testing.T
 		Extra: map[string]any{
 			"responses_websockets_v2_enabled": true,
 			CodexFingerprintModeExtraKey:      "session",
+			codexFingerprintSeedExtraKey:      "88888888-8888-4888-8888-888888888888",
 			"openai_device_id":                "http-ws-owner-installation",
 		},
 	}
@@ -994,12 +995,12 @@ func TestOpenAIGatewayService_Forward_WSv2_OAuthStoreFalseByDefault(t *testing.T
 	require.True(t, gjson.Get(requestJSON, "stream").Bool(), "OAuth Codex 规范化后应强制 stream=true")
 	require.Equal(t, "native-wsv2", gjson.Get(requestJSON, "input.0.namespace").String(), "OAuth WSv2 应保留原生 namespace")
 	require.Equal(t, "http-ws-owner-installation", gjson.Get(requestJSON, "client_metadata.x-codex-installation-id").String())
-	require.Equal(t, resolveConvergedSessionID(account), gjson.Get(requestJSON, "client_metadata.session_id").String())
+	require.Equal(t, resolveConvergedSessionID(testSeedOf(t, account)), gjson.Get(requestJSON, "client_metadata.session_id").String())
 	require.NotEmpty(t, gjson.Get(requestJSON, "client_metadata.turn_id").String())
 	require.Equal(t, openAIWSBetaV2Value, captureDialer.lastHeaders.Get("OpenAI-Beta"))
 	require.Equal(t, "remote_compaction_v2", captureDialer.lastHeaders.Get("x-codex-beta-features"))
 	require.Equal(t, "http-ws-owner-installation", captureDialer.lastHeaders.Get("x-codex-installation-id"))
-	require.Equal(t, resolveConvergedThreadID(account, "sess-oauth-1"), captureDialer.lastHeaders.Get("thread-id"))
+	require.Equal(t, resolveConvergedThreadID(testSeedOf(t, account), "sess-oauth-1"), captureDialer.lastHeaders.Get("thread-id"))
 	require.Equal(t, captureDialer.lastHeaders.Get("thread-id"), captureDialer.lastHeaders.Get("x-client-request-id"))
 	// Header and body cache identities must use the same account-aware resolver.
 	expectedSessionIdentity, resolveErr := svc.resolveOpenAIUpstreamPromptCacheHeaderIdentity(c, account, "sess-oauth-1")

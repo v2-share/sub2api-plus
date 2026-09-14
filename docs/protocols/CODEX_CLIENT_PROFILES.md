@@ -115,14 +115,27 @@ access control or replace the selected outbound identity.
 ## Outbound fingerprint convergence
 
 Every credential-owning OpenAI OAuth account stores an explicit
-`extra.codex_fingerprint_mode`. New accounts default to `device`; missing,
-empty, null, or malformed legacy values are normalized to `device`. API-key,
-setup-token, and credential-shadow accounts do not own this setting.
+`extra.codex_fingerprint_mode`. New accounts default to `off`; missing,
+empty, null, or malformed legacy values are normalized to `off`. Convergence
+is an explicit opt-in. API-key, setup-token, and credential-shadow accounts do
+not own this setting.
+
+Converged installation/session/thread identifiers are derived from a
+system-managed per-account random seed (`extra.codex_fingerprint_seed`), not
+from local row IDs: row IDs are deployment-relative and must never become
+upstream identity. The gateway creates the seed when convergence is first
+enabled — at account creation, or on the next account save after enabling —
+and preserves it across ordinary edits, so converging accounts keep a stable
+upstream device identity until an administrator explicitly changes the mode.
+Administrator-supplied seed values are rejected; the seed can only be generated
+or preserved by the gateway. Accounts that stored a convergence mode before
+seeds existed do not converge until their next save (one-time identity
+rotation); they never fall back to row-ID derivation.
 
 | Mode | Upstream-visible identity behavior |
 | --- | --- |
-| `off` | Do not mutate fingerprint-owned body or header carriers. Plus cache, security, session-sharing, and compact policy still apply. |
-| `device` (default) | Converge only the installation identifier to an account-level stable value; preserve each client's session and thread boundaries. |
+| `off` (default) | Do not mutate fingerprint-owned body or header carriers. Plus cache, security, session-sharing, and compact policy still apply. |
+| `device` | Converge only the installation identifier to an account-level stable value; preserve each client's session and thread boundaries. |
 | `session` | Converge installation and session identifiers; derive a stable thread from the client-original session. |
 | `full` | Converge installation, session, and thread identifiers to account-level values. |
 

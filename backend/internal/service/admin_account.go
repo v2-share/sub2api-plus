@@ -416,6 +416,9 @@ func buildAccountForCreate(input *CreateAccountInput, accountExtra map[string]an
 	delete(accountExtra, OllamaCloudUsageSessionExtraKey)
 	delete(accountExtra, OllamaCloudUsageAutoRefreshExtraKey)
 	delete(accountExtra, OllamaCloudUsageSnapshotExtraKey)
+	// 指纹种子是系统托管字段: 显式开启收敛的新账号在此生成随机种子,
+	// 提交的种子一律剥离 (管理员不可直接注入)。
+	accountExtra = prepareCodexFingerprintExtraForCreate(input.Platform, input.Type, accountExtra)
 	account := &Account{
 		Name:        input.Name,
 		Notes:       normalizeAccountNotes(input.Notes),
@@ -607,6 +610,8 @@ func (s *adminServiceImpl) UpdateAccount(ctx context.Context, id int64, input *U
 			return nil, err
 		}
 		normalizedExtra = withExistingCodexFingerprintModeIfOmitted(account, normalizedExtra)
+		// 保留或生成系统托管的指纹种子: 已持有种子的账号在普通编辑后身份不轮换。
+		normalizedExtra = prepareCodexFingerprintExtraForUpdate(account, normalizedExtra)
 		effectiveType := account.Type
 		if input.Type != "" {
 			effectiveType = input.Type
@@ -620,6 +625,7 @@ func (s *adminServiceImpl) UpdateAccount(ctx context.Context, id int64, input *U
 		}
 	} else {
 		canonicalizeCodexFingerprintModeForOmittedExtraUpdate(account)
+		account.Extra = prepareCodexFingerprintExtraForUpdate(account, account.Extra)
 	}
 	previousOllamaUsageIdentity := ollamaCloudUsageIdentity(account)
 	// 安全/身份不变量(影子账号):通用更新路径被 edit/re-auth/refresh/batch 共用,

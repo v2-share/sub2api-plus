@@ -1390,6 +1390,7 @@ func TestOpenAIGatewayService_ProxyResponsesWebSocketFromClient_PassthroughHeade
 		Extra: map[string]any{
 			"openai_oauth_responses_websockets_v2_mode": OpenAIWSIngressModePassthrough,
 			CodexFingerprintModeExtraKey:                "session",
+			codexFingerprintSeedExtraKey:                "99999999-9999-4999-8999-999999999999",
 			"openai_device_id":                          "passthrough-owner-installation",
 		},
 	}
@@ -1479,15 +1480,15 @@ func TestOpenAIGatewayService_ProxyResponsesWebSocketFromClient_PassthroughHeade
 	require.Equal(t, expectedCacheIdentity, captureDialer.lastHeaders.Get(codexSessionIDHeader))
 	require.Equal(t, expectedCacheIdentity, captureDialer.lastHeaders.Get("session_id"))
 	require.Equal(t, "passthrough-owner-installation", captureDialer.lastHeaders.Get("x-codex-installation-id"))
-	require.Equal(t, resolveConvergedSessionID(account), captureDialer.lastHeaders.Get("thread-id"))
+	require.Equal(t, resolveConvergedSessionID(testSeedOf(t, account)), captureDialer.lastHeaders.Get("thread-id"))
 	require.Equal(t, captureDialer.lastHeaders.Get("thread-id"), captureDialer.lastHeaders.Get("x-client-request-id"))
 	require.Equal(t, "turn-state-1", captureDialer.lastHeaders.Get(openAIWSTurnStateHeader))
 	require.Equal(t, "passthrough-owner-installation", gjson.Get(captureDialer.lastHeaders.Get(openAIWSTurnMetadataHeader), "installation_id").String())
-	require.Equal(t, resolveConvergedSessionID(account), gjson.Get(captureDialer.lastHeaders.Get(openAIWSTurnMetadataHeader), "session_id").String())
+	require.Equal(t, resolveConvergedSessionID(testSeedOf(t, account)), gjson.Get(captureDialer.lastHeaders.Get(openAIWSTurnMetadataHeader), "session_id").String())
 	require.Equal(t, expectedCacheIdentity, firstNonEmptyString(upstreamConn.writes[0]["prompt_cache_key"]))
 	forwarded := requestToJSONString(upstreamConn.writes[0])
 	require.Equal(t, "passthrough-owner-installation", gjson.Get(forwarded, "client_metadata.x-codex-installation-id").String())
-	require.Equal(t, resolveConvergedSessionID(account), gjson.Get(forwarded, "client_metadata.session_id").String())
+	require.Equal(t, resolveConvergedSessionID(testSeedOf(t, account)), gjson.Get(forwarded, "client_metadata.session_id").String())
 	require.NotEmpty(t, gjson.Get(forwarded, "client_metadata.turn_id").String())
 	require.False(t, gjson.Get(forwarded, `tools.#(type=="namespace")`).Exists())
 	require.Equal(t, "collaboration", gjson.Get(forwarded, `input.#(type=="additional_tools").tools.0.name`).String())

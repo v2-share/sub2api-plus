@@ -794,7 +794,7 @@ describe('EditAccountModal', () => {
   it.each([
     ['missing', {}],
     ['invalid', { codex_fingerprint_mode: 'invalid' }],
-  ])('normalizes %s Codex fingerprint mode to explicit device', async (_name, extra) => {
+  ])('normalizes %s Codex fingerprint mode to explicit off', async (_name, extra) => {
     const account = buildAccount()
     account.type = 'oauth'
     account.extra = extra
@@ -805,12 +805,12 @@ describe('EditAccountModal', () => {
 
     const wrapper = mountModal(account)
     const mode = wrapper.get<HTMLSelectElement>('[data-testid="edit-codex-fingerprint-mode-select"]')
-    expect(mode.element.value).toBe('device')
+    expect(mode.element.value).toBe('off')
 
     await wrapper.get('form#edit-account-form').trigger('submit.prevent')
 
     expect(updateAccountMock).toHaveBeenCalledTimes(1)
-    expect(updateAccountMock.mock.calls[0]?.[1]?.extra?.codex_fingerprint_mode).toBe('device')
+    expect(updateAccountMock.mock.calls[0]?.[1]?.extra?.codex_fingerprint_mode).toBe('off')
   })
 
   it('persists explicit off when editing an OAuth account', async () => {

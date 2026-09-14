@@ -39,6 +39,7 @@ func TestAccountTestService_TestAccountConnection_OpenAICompactOAuthSuccessPersi
 		},
 		Extra: map[string]any{
 			CodexFingerprintModeExtraKey: "full",
+			codexFingerprintSeedExtraKey: "11111111-1111-4111-8111-111111111111",
 			"openai_device_id":           "probe-owner-installation",
 		},
 	}
@@ -76,7 +77,7 @@ func TestAccountTestService_TestAccountConnection_OpenAICompactOAuthSuccessPersi
 	require.NotEmpty(t, upstream.lastReq.Header.Get("x-codex-window-id"))
 	require.NotEmpty(t, upstream.lastReq.Header.Get("thread-id"))
 	require.Equal(t, upstream.lastReq.Header.Get("thread-id"), upstream.lastReq.Header.Get("x-client-request-id"))
-	require.NotEqual(t, resolveConvergedSessionID(&account), upstream.lastReq.Header.Get("session-id"), "Plus probe cache identity must remain final")
+	require.NotEqual(t, resolveConvergedSessionID(testSeedOf(t, &account)), upstream.lastReq.Header.Get("session-id"), "Plus probe cache identity must remain final")
 	require.Equal(t, HTTPUpstreamProfileOpenAI, HTTPUpstreamProfileFromContext(upstream.lastReq.Context()))
 	require.Equal(t, DefaultOpenAICodexUserAgent, upstream.lastReq.Header.Get("User-Agent"))
 	require.Equal(t, "chatgpt-acc", upstream.lastReq.Header.Get("chatgpt-account-id"))
@@ -339,7 +340,10 @@ func TestAccountTestService_TestAccountConnection_OpenAICompactProbeComposesFing
 			"chatgpt_account_id": "chatgpt-acc",
 		},
 		// 显式启用更强的 session 收敛，以验证探测身份与真实流量同构。
-		Extra: map[string]any{"codex_fingerprint_mode": "session"},
+		Extra: map[string]any{
+			"codex_fingerprint_mode":     "session",
+			codexFingerprintSeedExtraKey: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+		},
 	}
 	repo := &snapshotUpdateAccountRepo{
 		stubOpenAIAccountRepo: stubOpenAIAccountRepo{accounts: []Account{account}},
@@ -363,10 +367,10 @@ func TestAccountTestService_TestAccountConnection_OpenAICompactProbeComposesFing
 	probeSessionID := compactProbeSessionID(account.ID)
 	require.Equal(t, probeSessionID, upstream.lastReq.Header.Get("session-id"))
 	require.Equal(t, probeSessionID, upstream.lastReq.Header.Get("session_id"))
-	require.NotEqual(t, resolveConvergedSessionID(&account), upstream.lastReq.Header.Get("session-id"))
-	require.Equal(t, resolveConvergedInstallationID(&account), upstream.lastReq.Header.Get("x-codex-installation-id"),
+	require.NotEqual(t, resolveConvergedSessionID(testSeedOf(t, &account)), upstream.lastReq.Header.Get("session-id"))
+	require.Equal(t, resolveConvergedInstallationID(&account, testSeedOf(t, &account)), upstream.lastReq.Header.Get("x-codex-installation-id"),
 		"真实 Codex 每个请求必带 installation-id，探测不得缺失")
-	wantThreadID := resolveConvergedThreadID(&account, probeSessionID)
+	wantThreadID := resolveConvergedThreadID(testSeedOf(t, &account), probeSessionID)
 	require.Equal(t, wantThreadID, upstream.lastReq.Header.Get("thread-id"))
 	require.Equal(t, wantThreadID, upstream.lastReq.Header.Get("x-client-request-id"))
 	require.NotContains(t, upstream.lastReq.Header.Get("session-id"), "probe_compact",
@@ -390,7 +394,10 @@ func TestAccountTestService_TestAccountConnection_OpenAICompactShadowUsesOwnerFi
 			"access_token":       "oauth-token",
 			"chatgpt_account_id": "chatgpt-acc",
 		},
-		Extra: map[string]any{CodexFingerprintModeExtraKey: "session"},
+		Extra: map[string]any{
+			CodexFingerprintModeExtraKey: "session",
+			codexFingerprintSeedExtraKey: "22222222-2222-4222-8222-222222222222",
+		},
 	}
 	ownerID := owner.ID
 	shadow := Account{
@@ -424,12 +431,13 @@ func TestAccountTestService_TestAccountConnection_OpenAICompactShadowUsesOwnerFi
 	probeSessionID := compactProbeSessionID(shadow.ID)
 	require.Equal(t, probeSessionID, upstream.lastReq.Header.Get("session-id"))
 	require.Equal(t, probeSessionID, upstream.lastReq.Header.Get("session_id"))
-	require.NotEqual(t, resolveConvergedSessionID(&owner), upstream.lastReq.Header.Get("session-id"))
-	require.Equal(t, resolveConvergedInstallationID(&owner), upstream.lastReq.Header.Get("x-codex-installation-id"))
-	wantThreadID := resolveConvergedThreadID(&owner, probeSessionID)
+	require.NotEqual(t, resolveConvergedSessionID(testSeedOf(t, &owner)), upstream.lastReq.Header.Get("session-id"))
+	require.Equal(t, resolveConvergedInstallationID(&owner, testSeedOf(t, &owner)), upstream.lastReq.Header.Get("x-codex-installation-id"))
+	wantThreadID := resolveConvergedThreadID(testSeedOf(t, &owner), probeSessionID)
 	require.Equal(t, wantThreadID, upstream.lastReq.Header.Get("thread-id"))
 	require.Equal(t, wantThreadID, upstream.lastReq.Header.Get("x-client-request-id"))
-	require.NotEqual(t, resolveConvergedInstallationID(&shadow), upstream.lastReq.Header.Get("x-codex-installation-id"))
+	require.NotEqual(t, resolveConvergedInstallationID(&shadow, ""), upstream.lastReq.Header.Get("x-codex-installation-id"),
+		"影子账号无种子无 device_id 时派生为空, 必然不等于出站收敛值")
 	<-updateCalls
 }
 

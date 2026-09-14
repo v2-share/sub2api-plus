@@ -562,14 +562,14 @@ describe('CreateAccountModal OpenAI long-context billing', () => {
     expect(importCodexSessionMock.mock.calls[0]?.[0]?.extra?.openai_long_context_billing_enabled).toBeUndefined()
   })
 
-  it('persists the explicit device fingerprint default for new Codex imports', async () => {
+  it('persists the explicit off fingerprint default for new Codex imports', async () => {
     const wrapper = mountModal()
     await selectButtonByText(wrapper, 'OpenAI')
 
     const mode = wrapper.get<HTMLSelectElement>(
       '[data-testid="create-codex-fingerprint-mode-select"]'
     )
-    expect(mode.element.value).toBe('device')
+    expect(mode.element.value).toBe('off')
 
     await wrapper.get('form#create-account-form input[type="text"]').setValue('Codex import')
     await wrapper.get('form#create-account-form').trigger('submit.prevent')
@@ -577,7 +577,7 @@ describe('CreateAccountModal OpenAI long-context billing', () => {
     await flushPromises()
 
     expect(importCodexSessionMock.mock.calls[0]?.[0]?.extra?.codex_fingerprint_mode).toBe(
-      'device'
+      'off'
     )
   })
 

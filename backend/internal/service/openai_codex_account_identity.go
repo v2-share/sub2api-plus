@@ -49,9 +49,9 @@ func codexAccountIdentitySource(c *gin.Context, fallback *Account) *Account {
 // codexAccountIdentityNamespace returns a stable, credential-scoped namespace.
 // Multiple local rows that use the same ChatGPT account intentionally share the
 // same namespace. Setup tokens use an irreversible bearer fingerprint because
-// they have no refresh lifecycle or imported account metadata. Plus does not
-// persist a fingerprint seed; remaining OAuth rows fall back to the
-// credential-owning account ID.
+// they have no refresh lifecycle or imported account metadata. Remaining OAuth
+// rows fall back to the system-managed fingerprint seed: local row IDs are
+// deployment-relative and must never become upstream identity.
 func codexAccountIdentityNamespace(account *Account) string {
 	if account == nil || !account.IsOpenAIOAuthLike() {
 		return ""
@@ -62,14 +62,14 @@ func codexAccountIdentityNamespace(account *Account) string {
 		}
 		return "chatgpt:" + upstreamAccountID
 	}
+	if seed, ok := codexFingerprintSeed(account.Extra); ok {
+		return "seed:" + seed
+	}
 	if account.Type == AccountTypeSetupToken {
 		if token := strings.TrimSpace(account.GetOpenAIAccessToken()); token != "" {
 			sum := sha256.Sum256([]byte("openai-setup-token:" + token))
 			return fmt.Sprintf("setup-token:%x", sum[:16])
 		}
-	}
-	if account.ID > 0 {
-		return fmt.Sprintf("account:%d", account.ID)
 	}
 	return ""
 }

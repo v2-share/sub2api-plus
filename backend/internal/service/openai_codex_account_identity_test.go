@@ -73,8 +73,15 @@ func TestCodexAccountIdentityNamespaceUsesStableCredentialSource(t *testing.T) {
 
 	localRow := &Account{ID: 11, Platform: PlatformOpenAI, Type: AccountTypeOAuth}
 	otherRow := &Account{ID: 12, Platform: PlatformOpenAI, Type: AccountTypeOAuth}
-	require.Equal(t, "account:11", codexAccountIdentityNamespace(localRow))
-	require.NotEqual(t, codexAccountIdentityNamespace(localRow), codexAccountIdentityNamespace(otherRow))
+	require.Empty(t, codexAccountIdentityNamespace(localRow), "无凭据来源的 OAuth 行不得回退本地行 ID")
+	require.Empty(t, codexAccountIdentityNamespace(otherRow))
+
+	seededRow := &Account{ID: 13, Platform: PlatformOpenAI, Type: AccountTypeOAuth, Extra: map[string]any{codexFingerprintSeedExtraKey: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"}}
+	seededOther := &Account{ID: 14, Platform: PlatformOpenAI, Type: AccountTypeOAuth, Extra: map[string]any{codexFingerprintSeedExtraKey: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"}}
+	seededDifferent := &Account{ID: 15, Platform: PlatformOpenAI, Type: AccountTypeOAuth, Extra: map[string]any{codexFingerprintSeedExtraKey: "cccccccc-cccc-4ccc-8ccc-cccccccccccc"}}
+	require.Equal(t, "seed:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", codexAccountIdentityNamespace(seededRow))
+	require.Equal(t, codexAccountIdentityNamespace(seededRow), codexAccountIdentityNamespace(seededOther))
+	require.NotEqual(t, codexAccountIdentityNamespace(seededRow), codexAccountIdentityNamespace(seededDifferent))
 
 	setupTokenA := &Account{ID: 30, Platform: PlatformOpenAI, Type: AccountTypeSetupToken, Credentials: map[string]any{"access_token": "setup-token-a"}}
 	setupTokenADuplicate := &Account{ID: 31, Platform: PlatformOpenAI, Type: AccountTypeSetupToken, Credentials: map[string]any{"access_token": "setup-token-a"}}

@@ -341,7 +341,7 @@ describe('BulkEditAccountModal', () => {
     })
   })
 
-  it('批量编辑默认显式持久化 device 指纹模式', async () => {
+  it('批量编辑默认显式持久化 off 指纹模式', async () => {
     const wrapper = mountModal({
       selectedPlatforms: ['openai'],
       selectedTypes: ['oauth']
@@ -350,14 +350,14 @@ describe('BulkEditAccountModal', () => {
     expect(
       wrapper.get<HTMLSelectElement>('[data-testid="bulk-codex-fingerprint-mode-select"]').element
         .value
-    ).toBe('device')
+    ).toBe('off')
     await wrapper.get('[data-testid="bulk-codex-fingerprint-mode-enabled"]').setValue(true)
     await wrapper.get('#bulk-edit-account-form').trigger('submit.prevent')
     await flushPromises()
 
     expect(adminAPI.accounts.bulkUpdate).toHaveBeenCalledWith([1, 2], {
       extra: {
-        codex_fingerprint_mode: 'device'
+        codex_fingerprint_mode: 'off'
       }
     })
   })
