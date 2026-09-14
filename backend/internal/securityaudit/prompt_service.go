@@ -425,7 +425,7 @@ func (s *PromptService) resolveProbeEndpoint(input UpdateEndpoint) (ActiveEndpoi
 	if limit == 0 {
 		limit = DefaultInputLimit
 	}
-	storage := storageConfig{Enabled: false, Strategy: "priority", WorkerCount: DefaultWorkerCount, QueueCapacity: DefaultQueueCapacity, Scanners: append([]string(nil), AllScannerIDs...), AllGroups: true,
+	storage := storageConfig{Enabled: false, EngineMode: EngineModeQwen3Guard, SystemPrompt: DefaultSystemPrompt, Strategy: "priority", WorkerCount: DefaultWorkerCount, QueueCapacity: DefaultQueueCapacity, Scanners: append([]string(nil), AllScannerIDs...), AllGroups: true,
 		Endpoints: []StorageEndpoint{{ID: strings.TrimSpace(input.ID), Name: strings.TrimSpace(input.Name), Protocol: "openai_compatible", BaseURL: baseURL, Model: model, TimeoutMS: timeout, InputLimit: limit}}}
 	if storage.Endpoints[0].ID == "" {
 		storage.Endpoints[0].ID = "probe"
@@ -436,7 +436,20 @@ func (s *PromptService) resolveProbeEndpoint(input UpdateEndpoint) (ActiveEndpoi
 	if err := validateStorageConfig(storage); err != nil {
 		return ActiveEndpoint{}, false, err
 	}
-	return ActiveEndpoint{ID: storage.Endpoints[0].ID, Name: storage.Endpoints[0].Name, Protocol: "openai_compatible", BaseURL: baseURL, Model: model, Token: token, TimeoutMS: timeout, InputLimit: limit, Enabled: true}, token != "", nil
+	engineMode, systemPrompt := EngineModeQwen3Guard, DefaultSystemPrompt
+	if cfg, ok := s.config.Active(); ok {
+		if cfg.EngineMode != "" {
+			engineMode = cfg.EngineMode
+		}
+		if strings.TrimSpace(cfg.SystemPrompt) != "" {
+			systemPrompt = cfg.SystemPrompt
+		}
+	}
+	return ActiveEndpoint{
+		ID: storage.Endpoints[0].ID, Name: storage.Endpoints[0].Name, Protocol: "openai_compatible",
+		BaseURL: baseURL, Model: model, EngineMode: engineMode, SystemPrompt: systemPrompt,
+		Token: token, TimeoutMS: timeout, InputLimit: limit, Enabled: true,
+	}, token != "", nil
 }
 
 func (s *PromptService) finishProbe(id string, started time.Time, result ProbeResult) ProbeResult {

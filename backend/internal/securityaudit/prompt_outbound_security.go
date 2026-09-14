@@ -44,6 +44,13 @@ func ChatCompletionsURL(base string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	path := strings.ToLower(strings.TrimRight(parsedPath(normalized), "/"))
+	if strings.HasSuffix(path, "/chat/completions") {
+		return normalized, nil
+	}
+	if strings.HasSuffix(path, "/v1") {
+		return normalized + "/chat/completions", nil
+	}
 	return normalized + "/v1/chat/completions", nil
 }
 
@@ -52,7 +59,23 @@ func ModelsURL(base string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	path := strings.TrimRight(parsedPath(normalized), "/")
+	lowerPath := strings.ToLower(path)
+	if strings.HasSuffix(lowerPath, "/chat/completions") {
+		return normalized[:len(normalized)-len("/chat/completions")] + "/models", nil
+	}
+	if strings.HasSuffix(lowerPath, "/v1") {
+		return normalized + "/models", nil
+	}
 	return normalized + "/v1/models", nil
+}
+
+func parsedPath(raw string) string {
+	parsed, err := url.Parse(raw)
+	if err != nil {
+		return ""
+	}
+	return parsed.EscapedPath()
 }
 
 func NewSecureHTTPClient(endpoint ActiveEndpoint) (*http.Client, error) {

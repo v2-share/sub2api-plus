@@ -341,6 +341,13 @@ func (m *ConfigManager) Save(ctx context.Context, req UpdateConfigRequest, actor
 }
 
 func (m *ConfigManager) buildNextStorage(current storageConfig, req UpdateConfigRequest, actorID int64) (storageConfig, error) {
+	if strings.TrimSpace(req.EngineMode) == "" {
+		req.EngineMode = current.EngineMode
+	}
+	if strings.TrimSpace(req.SystemPrompt) == "" {
+		req.SystemPrompt = current.SystemPrompt
+	}
+	req = normalizeUpdateConfigRequest(req)
 	if err := validateUpdateConfigRequest(req); err != nil {
 		return storageConfig{}, err
 	}
@@ -350,6 +357,7 @@ func (m *ConfigManager) buildNextStorage(current storageConfig, req UpdateConfig
 	}
 	next := storageConfig{
 		Enabled: req.Enabled, BlockingEnabled: req.BlockingEnabled, StorePassEvents: req.StorePassEvents,
+		EngineMode: req.EngineMode, SystemPrompt: strings.TrimSpace(req.SystemPrompt),
 		Strategy: strings.TrimSpace(req.Strategy), WorkerCount: req.WorkerCount,
 		QueueCapacity: req.QueueCapacity, Scanners: append([]string(nil), req.Scanners...),
 		AllGroups: req.AllGroups, GroupIDs: append([]int64(nil), req.GroupIDs...),

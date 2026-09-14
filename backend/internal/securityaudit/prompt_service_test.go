@@ -274,6 +274,28 @@ func TestPromptServiceBlockingAuditsExtractedSiblingDespiteIncompleteContent(t *
 	require.Equal(t, AuditMetricsSnapshot{ExtractionAttempted: 1, ExtractionFailed: 1}, metrics.AuditSnapshot())
 }
 
+func TestResolveProbeEndpointUsesConfiguredEngineAndDefaults(t *testing.T) {
+	manager := &ConfigManager{}
+	service := &PromptService{config: manager}
+
+	endpoint, _, err := service.resolveProbeEndpoint(UpdateEndpoint{
+		ID: "guard-1", Name: "Guard", BaseURL: "http://127.0.0.1:8080", TimeoutMS: 1000, InputLimit: 1024,
+	})
+	require.NoError(t, err)
+	require.Equal(t, EngineModeQwen3Guard, endpoint.EngineMode)
+	require.Equal(t, DefaultSystemPrompt, endpoint.SystemPrompt)
+
+	manager.snapshot.Store(&activeConfigSnapshot{active: ActiveConfig{
+		EngineMode: EngineModeCustomJSON, SystemPrompt: "configured prompt",
+	}})
+	endpoint, _, err = service.resolveProbeEndpoint(UpdateEndpoint{
+		ID: "guard-1", Name: "Guard", BaseURL: "http://127.0.0.1:8080", TimeoutMS: 1000, InputLimit: 1024,
+	})
+	require.NoError(t, err)
+	require.Equal(t, EngineModeCustomJSON, endpoint.EngineMode)
+	require.Equal(t, "configured prompt", endpoint.SystemPrompt)
+}
+
 func TestPromptServiceRejectsInvalidDeleteConfirmationClaims(t *testing.T) {
 	now := time.Date(2026, 7, 16, 10, 0, 0, 0, time.UTC)
 	start, end := now.Add(-time.Hour), now.Add(time.Hour)

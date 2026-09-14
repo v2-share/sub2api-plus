@@ -96,7 +96,7 @@ import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseDialog from '@/components/common/BaseDialog.vue'
 import type { PromptAuditEvent, PromptIssueSummary } from '../types'
-import { SCANNER_CATALOG } from '../viewModel'
+import { CUSTOM_POLICY_CATEGORY, SCANNER_CATALOG } from '../viewModel'
 
 const props = defineProps<{ show: boolean; event: PromptAuditEvent | null; loading: boolean }>()
 defineEmits<{ (event: 'close'): void }>()
@@ -131,7 +131,7 @@ function formatDecisionAction(decision: string, action: string): string {
   return `${decisionLabel} · ${actionLabel}`
 }
 function translateCategory(category: string): string {
-  return SCANNER_CATALOG.some((scanner) => scanner.id === category)
+  return SCANNER_CATALOG.some((scanner) => scanner.id === category) || category === CUSTOM_POLICY_CATEGORY
     ? t(`admin.promptAudit.scanners.${category}`)
     : category
 }

@@ -57,6 +57,44 @@ func TestParseStorageConfigIgnoresLegacyLatestTurnOnlyField(t *testing.T) {
 	require.NotContains(t, string(publicJSON), "blocking_latest_turn_only")
 }
 
+func TestCustomJSONConfigRoundTripKeepsEngineAndPromptOutOfSummary(t *testing.T) {
+	const systemPrompt = "custom audit system prompt"
+	manager := &ConfigManager{encryptor: prefixEncryptor{}, encryptionKeyConfigured: true}
+	request := UpdateConfigRequest{
+		ExpectedConfigVersion: 1, Enabled: true, EngineMode: EngineModeCustomJSON, SystemPrompt: systemPrompt,
+		Strategy: "priority", WorkerCount: 1, QueueCapacity: 10, Scanners: []string{"pii"}, AllGroups: true,
+		Endpoints: []UpdateEndpoint{{
+			ID: "guard-1", Name: "Guard", Protocol: "openai_compatible", BaseURL: "http://127.0.0.1:8080",
+			Model: "custom-model", TimeoutMS: 1000, InputLimit: 1000, Enabled: true,
+		}},
+	}
+	next, err := manager.buildNextStorage(DefaultStorageConfig(), request, 9)
+	require.NoError(t, err)
+	require.Equal(t, EngineModeCustomJSON, next.EngineMode)
+	require.Equal(t, systemPrompt, next.SystemPrompt)
+	require.Contains(t, changeSummary(next), `"engine_mode":"custom_json"`)
+	require.Contains(t, changeSummary(next), `"system_prompt_hash"`)
+	require.NotContains(t, changeSummary(next), systemPrompt)
+
+	active, err := ActiveFromStorage(next, true, prefixEncryptor{})
+	require.NoError(t, err)
+	require.Equal(t, EngineModeCustomJSON, active.EngineMode)
+	require.Equal(t, systemPrompt, active.SystemPrompt)
+	require.Equal(t, EngineModeCustomJSON, active.Endpoints[0].EngineMode)
+	require.Equal(t, systemPrompt, active.Endpoints[0].SystemPrompt)
+	public := PublicFromStorage(next, true, nil)
+	require.Equal(t, EngineModeCustomJSON, public.EngineMode)
+	require.Equal(t, systemPrompt, public.SystemPrompt)
+
+	legacyRequest := request
+	legacyRequest.EngineMode = ""
+	legacyRequest.SystemPrompt = ""
+	legacyNext, err := manager.buildNextStorage(next, legacyRequest, 10)
+	require.NoError(t, err)
+	require.Equal(t, EngineModeCustomJSON, legacyNext.EngineMode)
+	require.Equal(t, systemPrompt, legacyNext.SystemPrompt)
+}
+
 func TestConfigRejectsBlockingWithoutAudit(t *testing.T) {
 	storage := DefaultStorageConfig()
 	storage.BlockingEnabled = true
@@ -423,6 +461,9 @@ func TestUpdateConfigStrictBoundsAndKnownValues(t *testing.T) {
 		mutate func(*UpdateConfigRequest)
 		reason string
 	}{
+		{name: "engine mode", mutate: func(req *UpdateConfigRequest) { req.EngineMode = "unknown" }, reason: "prompt_audit_invalid_engine_mode"},
+		{name: "system prompt too long", mutate: func(req *UpdateConfigRequest) { req.SystemPrompt = strings.Repeat("x", MaxSystemPromptRunes+1) }, reason: "prompt_audit_invalid_system_prompt"},
+		{name: "derived custom category", mutate: func(req *UpdateConfigRequest) { req.Scanners = []string{CustomPolicyCategory} }, reason: "prompt_audit_invalid_scanner"},
 		{name: "strategy", mutate: func(req *UpdateConfigRequest) { req.Strategy = "round_robin" }, reason: "prompt_audit_invalid_strategy"},
 		{name: "worker low", mutate: func(req *UpdateConfigRequest) { req.WorkerCount = 0 }, reason: "prompt_audit_invalid_worker_count"},
 		{name: "worker high", mutate: func(req *UpdateConfigRequest) { req.WorkerCount = MaxWorkerCount + 1 }, reason: "prompt_audit_invalid_worker_count"},

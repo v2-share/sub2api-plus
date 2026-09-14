@@ -47,6 +47,7 @@ var ScannerCatalog = map[string]ScannerDefinition{
 	"politically_sensitive_topics":  {ID: "politically_sensitive_topics", Label: "Politically Sensitive Topics", LabelZH: "政治敏感话题", Description: "Politically sensitive topics"},
 	"copyright_violation":           {ID: "copyright_violation", Label: "Copyright Violation", LabelZH: "版权侵权", Description: "Copyright infringement"},
 	"jailbreak":                     {ID: "jailbreak", Label: "Jailbreak", LabelZH: "越狱攻击", Description: "Prompt injection or jailbreak attempt"},
+	CustomPolicyCategory:            {ID: CustomPolicyCategory, Label: "Custom Policy Violation", LabelZH: "自定义策略违规", Description: "The configured custom JSON policy marked the input as violating"},
 }
 
 var categoryAliases = map[string]string{
@@ -197,7 +198,11 @@ type OpenAICompatibleScanner struct {
 func NewOpenAICompatibleScanner() *OpenAICompatibleScanner { return &OpenAICompatibleScanner{} }
 
 func (s *OpenAICompatibleScanner) Scan(ctx context.Context, endpoint ActiveEndpoint, chunk string, enabledScanners []string) (*NormalizedResult, error) {
-	return s.scan(promptEndpointIdentityContext(ctx, endpoint), endpoint, chunk, enabledScanners)
+	identityCtx := promptEndpointIdentityContext(ctx, endpoint)
+	if endpoint.EngineMode == EngineModeCustomJSON {
+		return s.scanCustomJSON(identityCtx, endpoint, chunk)
+	}
+	return s.scan(identityCtx, endpoint, chunk, enabledScanners)
 }
 
 type promptIdentityScopeKey struct{}
@@ -286,6 +291,76 @@ func (s *OpenAICompatibleScanner) scan(ctx context.Context, endpoint ActiveEndpo
 		return nil, &GuardError{Code: ErrorCodeInvalidResponse, Cause: err}
 	}
 	result, err := ParseQwen3Guard(content, enabledScanners)
+	if err != nil {
+		return nil, err
+	}
+	result.GuardEndpointID = endpoint.ID
+	result.ScannerVersion = endpoint.Model
+	return result, nil
+}
+
+func (s *OpenAICompatibleScanner) scanCustomJSON(ctx context.Context, endpoint ActiveEndpoint, chunk string) (*NormalizedResult, error) {
+	client, err := s.clientFor(endpoint)
+	if err != nil {
+		return nil, &GuardError{Code: ErrorCodeUnavailable, Cause: err}
+	}
+	requestURL, err := ChatCompletionsURL(endpoint.BaseURL)
+	if err != nil {
+		return nil, &GuardError{Code: ErrorCodeUnavailable, Cause: err}
+	}
+	systemPrompt := strings.TrimSpace(endpoint.SystemPrompt)
+	if systemPrompt == "" {
+		systemPrompt = DefaultSystemPrompt
+	}
+	payload := map[string]any{
+		"model": endpoint.Model,
+		"messages": []map[string]string{
+			{"role": "system", "content": systemPrompt},
+			{"role": "user", "content": WrapCustomJSONInput(chunk)},
+		},
+		"temperature": 0,
+		"max_tokens":  64,
+		"seed":        42,
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return nil, &GuardError{Code: ErrorCodeInvalidResponse, Cause: err}
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, requestURL, bytes.NewReader(body))
+	if err != nil {
+		return nil, &GuardError{Code: ErrorCodeUnavailable, Cause: err}
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if endpoint.Token != "" {
+		req.Header.Set("Authorization", "Bearer "+endpoint.Token)
+	}
+	outboundidentity.ApplyContext(req)
+	resp, err := client.Do(req)
+	if err != nil {
+		timeout := errors.Is(err, context.DeadlineExceeded)
+		var netErr net.Error
+		if errors.As(err, &netErr) && netErr.Timeout() {
+			timeout = true
+		}
+		return nil, &GuardError{Code: ErrorCodeUnavailable, Retryable: true, Timeout: timeout, Cause: err}
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		retryable := resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode >= 500
+		return nil, &GuardError{Code: ErrorCodeUnavailable, HTTPStatus: resp.StatusCode, Retryable: retryable}
+	}
+	responseBody, err := io.ReadAll(io.LimitReader(resp.Body, maxGuardResponseBytes+1))
+	if err != nil {
+		return nil, &GuardError{Code: ErrorCodeUnavailable, Retryable: true, Cause: err}
+	}
+	if int64(len(responseBody)) > maxGuardResponseBytes {
+		return nil, &GuardError{Code: ErrorCodeInvalidResponse}
+	}
+	content, err := extractOpenAIContent(responseBody)
+	if err != nil {
+		return nil, &GuardError{Code: ErrorCodeInvalidResponse, Cause: err}
+	}
+	result, err := ParseCustomJSON(content)
 	if err != nil {
 		return nil, err
 	}

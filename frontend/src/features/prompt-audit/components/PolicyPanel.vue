@@ -5,6 +5,21 @@
       <p class="mt-1 text-sm text-gray-500 dark:text-dark-300">{{ t('admin.promptAudit.policy.description') }}</p>
     </div>
 
+    <div class="mt-5 grid gap-4 rounded-xl border border-gray-200 p-4 dark:border-dark-700/60 dark:bg-dark-900/20 sm:p-5">
+      <label class="block max-w-xl text-sm text-gray-700 dark:text-dark-200">
+        <span>{{ t('admin.promptAudit.policy.engineMode') }}</span>
+        <select :value="draft.engine_mode" class="input mt-1.5 w-full" :aria-label="t('admin.promptAudit.policy.engineMode')" data-test="engine-mode" @change="patch({ engine_mode: ($event.target as HTMLSelectElement).value as PromptAuditDraft['engine_mode'] })">
+          <option value="qwen3guard">{{ t('admin.promptAudit.policy.engineQwen3Guard') }}</option>
+          <option value="custom_json">{{ t('admin.promptAudit.policy.engineCustomJSON') }}</option>
+        </select>
+      </label>
+      <label class="block text-sm text-gray-700 dark:text-dark-200">
+        <span>{{ t('admin.promptAudit.policy.systemPrompt') }}</span>
+        <textarea :value="draft.system_prompt" class="input mt-1.5 min-h-64 w-full font-mono text-xs" :aria-label="t('admin.promptAudit.policy.systemPrompt')" data-test="system-prompt" @input="patch({ system_prompt: ($event.target as HTMLTextAreaElement).value })" />
+        <span class="mt-1 block text-xs text-gray-500 dark:text-dark-400">{{ t('admin.promptAudit.policy.systemPromptHint') }}</span>
+      </label>
+    </div>
+
     <div class="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.45fr)]">
       <div class="rounded-xl border border-gray-200 p-4 dark:border-dark-700/60 dark:bg-dark-900/20 sm:p-5">
         <fieldset>

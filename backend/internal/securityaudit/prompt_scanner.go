@@ -48,6 +48,9 @@ func AggregateResults(results []*NormalizedResult, latency time.Duration) (*Norm
 			aggregated.RiskLevel = result.RiskLevel
 			aggregated.Action = result.Action
 			aggregated.Safety = result.Safety
+			aggregated.Confidence = result.Confidence
+			aggregated.Reason = result.Reason
+			aggregated.ScannerBackend = result.ScannerBackend
 			aggregated.GuardEndpointID = result.GuardEndpointID
 			aggregated.ScannerVersion = result.ScannerVersion
 			aggregated.PolicyID = result.PolicyID
@@ -55,10 +58,15 @@ func AggregateResults(results []*NormalizedResult, latency time.Duration) (*Norm
 			aggregated.MatchedChunkIndex = result.MatchedChunkIndex
 		}
 		if aggregated.GuardEndpointID == "" {
+			aggregated.ScannerBackend = result.ScannerBackend
 			aggregated.GuardEndpointID = result.GuardEndpointID
 			aggregated.ScannerVersion = result.ScannerVersion
 			aggregated.PolicyID = result.PolicyID
 			aggregated.PolicyVersion = result.PolicyVersion
+		}
+		if result.Confidence > aggregated.Confidence || aggregated.Reason == "" {
+			aggregated.Confidence = result.Confidence
+			aggregated.Reason = result.Reason
 		}
 		for _, category := range result.Categories {
 			categories[category] = struct{}{}

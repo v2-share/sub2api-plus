@@ -35,6 +35,15 @@ func TestNormalizeBaseURLAllowsAdministratorConfiguredDestinations(t *testing.T)
 	url, err := ChatCompletionsURL("https://guard.example.com/v1")
 	require.NoError(t, err)
 	require.Equal(t, "https://guard.example.com/v1/chat/completions", url)
+	url, err = ChatCompletionsURL("https://opencode.ai/zen/go/v1")
+	require.NoError(t, err)
+	require.Equal(t, "https://opencode.ai/zen/go/v1/chat/completions", url)
+	url, err = ChatCompletionsURL("https://opencode.ai/zen/go/v1/chat/completions")
+	require.NoError(t, err)
+	require.Equal(t, "https://opencode.ai/zen/go/v1/chat/completions", url)
+	models, err := ModelsURL("https://opencode.ai/zen/go/v1/chat/completions")
+	require.NoError(t, err)
+	require.Equal(t, "https://opencode.ai/zen/go/v1/models", models)
 }
 
 func TestHTTPClientUsesDirectStandardDialer(t *testing.T) {

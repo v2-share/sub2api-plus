@@ -14,6 +14,8 @@ const config = (): PromptAuditConfig => ({
   enabled: true,
   blocking_enabled: false,
   store_pass_events: false,
+  engine_mode: 'qwen3guard',
+  system_prompt: 'default-system-prompt',
   effective_mode: 'async_audit',
   strategy: 'priority',
   worker_count: 4,
@@ -56,6 +58,15 @@ describe('Prompt Audit view model', () => {
     expect(buildUpdateRequest(draft).endpoints[0]).toMatchObject({ token: undefined, clear_token: true })
   })
 
+  it('includes the selected audit engine and system prompt in the update payload', () => {
+    const draft = configToDraft(config())
+    draft.engine_mode = 'custom_json'
+    draft.system_prompt = 'custom-system-prompt'
+    expect(buildUpdateRequest(draft)).toMatchObject({
+      engine_mode: 'custom_json',
+      system_prompt: 'custom-system-prompt',
+    })
+  })
   it('tracks dirty state from the full normalized save payload', () => {
     const original = configToDraft(config())
     const changed = configToDraft(config())

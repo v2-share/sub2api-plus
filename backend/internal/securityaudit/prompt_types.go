@@ -132,6 +132,8 @@ type NormalizedResult struct {
 	RiskLevel         RiskLevel          `json:"risk_level"`
 	Action            Action             `json:"action"`
 	Safety            string             `json:"safety"`
+	Confidence        float64            `json:"confidence,omitempty"`
+	Reason            string             `json:"reason,omitempty"`
 	Categories        []string           `json:"categories"`
 	MatchedScanners   []string           `json:"matched_scanners"`
 	ScannerScores     map[string]float64 `json:"scanner_scores"`

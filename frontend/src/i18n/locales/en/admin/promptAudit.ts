@@ -1,7 +1,7 @@
 export default {
   promptAudit: {
     title: 'Prompt Audit',
-    description: 'Review user input asynchronously or block it synchronously through OpenAI-compatible Qwen3Guard nodes. Bounded retained content is available for admin review.',
+    description: 'Review user input asynchronously or block it synchronously through OpenAI-compatible audit nodes. Supports Qwen3Guard and custom JSON policies. Bounded retained content is available for admin review.',
     configVersion: 'Config version v{version}',
     tabs: { config: 'Configuration', events: 'Events' },
     actions: { refresh: 'Refresh runtime', retry: 'Retry', Allow: 'Allow', Warn: 'Warn', Block: 'Block' },
@@ -20,6 +20,7 @@ export default {
       politically_sensitive_topics: 'Politically Sensitive Topics',
       copyright_violation: 'Copyright Violation',
       jailbreak: 'Jailbreak',
+      custom_policy: 'Custom Policy Violation',
     },
     scannerDescriptions: {
       violent: 'Violence or threats of violence',
@@ -31,6 +32,7 @@ export default {
       politically_sensitive_topics: 'Politically sensitive topics',
       copyright_violation: 'Copyright infringement',
       jailbreak: 'Prompt injection or jailbreak attempt',
+      custom_policy: 'The custom audit policy marked the input as violating',
     },
     runtime: {
       title: 'Runtime overview',
@@ -52,8 +54,9 @@ export default {
       toggleNode: 'Toggle node {name}', deleteConfirm: 'Remove “{name}” from the draft? It takes effect after saving.',
     },
     policy: {
-      title: 'Audit policy', description: 'Configure group scope, nine input-risk categories, workers, and queue bounds.', scope: 'Scope', allGroups: 'All groups', selectedGroups: 'Selected groups',
+      title: 'Audit policy', description: 'Configure the audit engine, system prompt, group scope, input risks, workers, and queue bounds.', scope: 'Scope', allGroups: 'All groups', selectedGroups: 'Selected groups',
       searchGroups: 'Search groups', noGroups: 'No matching groups', missingGroups: 'Configured IDs for groups that no longer exist', selectedCount: '{count} groups selected',
+      engineMode: 'Audit engine mode', engineQwen3Guard: 'Qwen3Guard-compatible mode', engineCustomJSON: 'Custom JSON mode', systemPrompt: 'System prompt', systemPromptHint: 'Custom JSON mode sends this value as the system message; changes apply to new audit requests after saving.',
       scanners: 'Qwen3Guard input-risk categories', workerCount: 'Worker count', queueCapacity: 'Persistent queue capacity', strategy: 'Node strategy', strategyHint: 'Try nodes in configuration order and fail over when allowed.',
     },
     saveBar: { enabled: 'Enable prompt audit', blocking: 'Synchronous blocking', storePass: 'Store safe events', dirty: 'Unsaved changes', synced: 'Configuration synced' },
@@ -96,7 +99,7 @@ export default {
       loadConfig: 'Unable to load Prompt Audit configuration.', loadRuntime: 'Unable to load Prompt Audit runtime.', loadGroups: 'Unable to load groups.', loadEvents: 'Unable to load audit events.', loadDetail: 'Unable to load event details.', saveConfig: 'Unable to save the configuration.', probe: 'Node probe failed.', delete: 'Unable to delete events.', previewDelete: 'Unable to create a deletion preview. Check the time range.', deleteConfirmation: 'The deletion confirmation is invalid or expired. Preview again.',
       prompt_audit_config_conflict: 'Another administrator updated this configuration. Reload the server version before deciding how to merge your draft.',
       prompt_audit_encryption_key_required: 'No fixed encryption key is configured, so audit node API Keys would be lost on restart. Set the TOTP_ENCRYPTION_KEY environment variable and restart the service first.',
-      prompt_guard_requires_audit_enabled: 'Enable Prompt Audit before synchronous blocking.', prompt_audit_invalid_endpoint: 'The audit node configuration is invalid.', prompt_audit_endpoint_required: 'Enable at least one audit node before enabling Prompt Audit.', prompt_audit_groups_required: 'Select at least one group in selected-group mode.', prompt_audit_scanners_required: 'Enable at least one risk category.',
+      prompt_guard_requires_audit_enabled: 'Enable Prompt Audit before synchronous blocking.', prompt_audit_invalid_endpoint: 'The audit node configuration is invalid.', prompt_audit_endpoint_required: 'Enable at least one audit node before enabling Prompt Audit.', prompt_audit_groups_required: 'Select at least one group in selected-group mode.', prompt_audit_scanners_required: 'Enable at least one risk category.', prompt_audit_invalid_engine_mode: 'The audit engine mode is invalid.', prompt_audit_invalid_system_prompt: 'The system prompt exceeds the allowed length.',
       prompt_audit_invalid_client_ip: 'The client IP filter is invalid.',
     },
   },

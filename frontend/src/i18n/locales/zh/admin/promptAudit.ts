@@ -1,7 +1,7 @@
 export default {
   promptAudit: {
     title: '提示词审计',
-    description: '通过 OpenAI 兼容 Qwen3Guard 节点异步复核或同步阻止用户输入；事件会按上限留存审计内容，供管理员复核。',
+    description: '通过 OpenAI 兼容审计节点异步复核或同步阻止用户输入；支持 Qwen3Guard 和自定义 JSON 审计策略。事件会按上限留存审计内容，供管理员复核。',
     configVersion: '配置版本 v{version}',
     tabs: { config: '配置', events: '事件' },
     actions: { refresh: '刷新运行态', retry: '重试', Allow: '放行', Warn: '警告', Block: '阻止' },
@@ -20,6 +20,7 @@ export default {
       politically_sensitive_topics: '政治敏感话题',
       copyright_violation: '版权侵犯',
       jailbreak: '越狱',
+      custom_policy: '自定义策略违规',
     },
     scannerDescriptions: {
       violent: '暴力或暴力威胁',
@@ -31,6 +32,7 @@ export default {
       politically_sensitive_topics: '政治敏感话题',
       copyright_violation: '版权侵权',
       jailbreak: '提示注入或越狱尝试',
+      custom_policy: '自定义审计策略判定为违规',
     },
     runtime: {
       title: '运行概览',
@@ -52,8 +54,9 @@ export default {
       toggleNode: '切换节点 {name}', deleteConfirm: '从草稿中删除节点“{name}”？保存配置后生效。',
     },
     policy: {
-      title: '审计策略', description: '配置适用分组、九类输入风险、Worker 与队列边界。', scope: '适用范围', allGroups: '全部分组', selectedGroups: '指定分组',
+      title: '审计策略', description: '配置审计引擎、系统提示词、适用分组、输入风险、Worker 与队列边界。', scope: '适用范围', allGroups: '全部分组', selectedGroups: '指定分组',
       searchGroups: '搜索分组', noGroups: '没有匹配分组', missingGroups: '配置中包含已删除的分组 ID', selectedCount: '已选择 {count} 个分组',
+      engineMode: '审计引擎模式', engineQwen3Guard: 'Qwen3Guard 兼容模式', engineCustomJSON: '自定义 JSON 模式', systemPrompt: '系统提示词', systemPromptHint: '自定义 JSON 模式会将此内容作为 system message 发送；保存后对新的审计请求生效。',
       scanners: 'Qwen3Guard 输入风险分类', workerCount: 'Worker 数量', queueCapacity: '持久队列容量', strategy: '节点策略', strategyHint: '按配置顺序优先尝试，必要时故障切换。',
     },
     saveBar: { enabled: '启用提示词审计', blocking: '同步阻止', storePass: '保存安全事件', dirty: '有未保存的更改', synced: '配置已同步' },
@@ -96,7 +99,7 @@ export default {
       loadConfig: '无法加载提示词审计配置。', loadRuntime: '无法加载提示词审计运行态。', loadGroups: '无法加载分组列表。', loadEvents: '无法加载审计事件。', loadDetail: '无法加载事件详情。', saveConfig: '配置保存失败。', probe: '节点探测失败。', delete: '事件删除失败。', previewDelete: '无法生成删除预览，请检查时间范围。', deleteConfirmation: '删除确认无效或已过期，请重新预览。',
       prompt_audit_config_conflict: '配置已被其他管理员更新。请重新加载服务端配置，再决定如何合并本地草稿。',
       prompt_audit_encryption_key_required: '未配置固定加密密钥，审计节点 API Key 将在服务重启后失效。请先设置 TOTP_ENCRYPTION_KEY 环境变量并重启服务。',
-      prompt_guard_requires_audit_enabled: '开启同步阻止前必须先启用提示词审计。', prompt_audit_invalid_endpoint: '审计节点配置无效。', prompt_audit_endpoint_required: '启用审计前至少需要一个启用节点。', prompt_audit_groups_required: '指定分组模式至少需要选择一个分组。', prompt_audit_scanners_required: '至少需要启用一个风险分类。',
+      prompt_guard_requires_audit_enabled: '开启同步阻止前必须先启用提示词审计。', prompt_audit_invalid_endpoint: '审计节点配置无效。', prompt_audit_endpoint_required: '启用审计前至少需要一个启用节点。', prompt_audit_groups_required: '指定分组模式至少需要选择一个分组。', prompt_audit_scanners_required: '至少需要启用一个风险分类。', prompt_audit_invalid_engine_mode: '审计引擎模式无效。', prompt_audit_invalid_system_prompt: '系统提示词超过允许长度。',
       prompt_audit_invalid_client_ip: '客户端 IP 筛选值无效。',
     },
   },
