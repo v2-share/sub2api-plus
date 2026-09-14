@@ -110,7 +110,7 @@ dockers_v2:
     dockerfile: Dockerfile.goreleaser
     images: ["ghcr.io/{{ .Env.GITHUB_REPO_OWNER_LOWER }}/sub2api-plus"]
     tags: ["{{ .Env.DOCKER_TAG_VERSION }}-amd64"]
-    disable: '{{ eq .Env.SKIP_GHCR_IMAGES "true" }}'
+    disable: '{{ eq (index .Env "SKIP_GHCR_IMAGES") "true" }}'
     platforms: [linux/amd64]
     sbom: "false"
     extra_files: [deploy/docker-entrypoint.sh, backend/resources]
@@ -124,7 +124,7 @@ dockers_v2:
     dockerfile: Dockerfile.goreleaser
     images: ["ghcr.io/{{ .Env.GITHUB_REPO_OWNER_LOWER }}/sub2api-plus"]
     tags: ["{{ .Env.DOCKER_TAG_VERSION }}-arm64"]
-    disable: '{{ eq .Env.SKIP_GHCR_IMAGES "true" }}'
+    disable: '{{ eq (index .Env "SKIP_GHCR_IMAGES") "true" }}'
     platforms: [linux/arm64]
     sbom: "false"
     extra_files: [deploy/docker-entrypoint.sh, backend/resources]
@@ -142,7 +142,7 @@ dockers_v2:
       - latest
       - "{{ .Major }}.{{ .Minor }}"
       - "{{ .Major }}"
-    disable: '{{ eq .Env.SKIP_GHCR_IMAGES "true" }}'
+    disable: '{{ eq (index .Env "SKIP_GHCR_IMAGES") "true" }}'
     platforms: [linux/amd64, linux/arm64]
     sbom: "false"
     extra_files: [deploy/docker-entrypoint.sh, backend/resources]

@@ -144,6 +144,9 @@ jobs:
           GITHUB_REPO_NAME: ${{ github.event.repository.name }}
           DOCKER_TAG_VERSION: ${{ steps.metadata.outputs.docker_tag }}
           DOCKERHUB_USERNAME: skip
+          # Keep the GHCR image entries enabled; set to "true" to publish a
+          # release without container images.
+          SKIP_GHCR_IMAGES: "false"
 
       - name: Publish pricing release assets
         env:
