@@ -846,6 +846,48 @@ describe('EditAccountModal', () => {
     expect(updateAccountMock.mock.calls[0]?.[1]?.extra?.codex_fingerprint_mode).toBe('session')
   })
 
+  it.each([
+    ['device', { codex_fingerprint_mode: 'device' }],
+    ['full', { codex_fingerprint_mode: 'full' }],
+  ])('shows the fingerprint seed migration hint for a legacy %s account without a seed', async (_name, extra) => {
+    const account = buildAccount()
+    account.type = 'oauth'
+    account.extra = extra
+    updateAccountMock.mockReset().mockResolvedValue(account)
+    checkMixedChannelRiskMock.mockReset().mockResolvedValue({ has_risk: false })
+
+    const wrapper = mountModal(account)
+    expect(wrapper.find('[data-testid="edit-codex-fingerprint-seed-pending"]').exists()).toBe(true)
+
+    await wrapper.get('[data-testid="edit-codex-fingerprint-mode-select"]').setValue('off')
+    expect(wrapper.find('[data-testid="edit-codex-fingerprint-seed-pending"]').exists()).toBe(false)
+  })
+
+  it('hides the fingerprint seed migration hint when the stored mode falls back to off', async () => {
+    const account = buildAccount()
+    account.type = 'oauth'
+    account.extra = { codex_fingerprint_mode: 'invalid' }
+    updateAccountMock.mockReset().mockResolvedValue(account)
+    checkMixedChannelRiskMock.mockReset().mockResolvedValue({ has_risk: false })
+
+    const wrapper = mountModal(account)
+    expect(wrapper.find('[data-testid="edit-codex-fingerprint-seed-pending"]').exists()).toBe(false)
+  })
+
+  it('hides the fingerprint seed migration hint once a seed exists', async () => {
+    const account = buildAccount()
+    account.type = 'oauth'
+    account.extra = {
+      codex_fingerprint_mode: 'device',
+      codex_fingerprint_seed: '11111111-1111-4111-8111-111111111111'
+    }
+    updateAccountMock.mockReset().mockResolvedValue(account)
+    checkMixedChannelRiskMock.mockReset().mockResolvedValue({ has_risk: false })
+
+    const wrapper = mountModal(account)
+    expect(wrapper.find('[data-testid="edit-codex-fingerprint-seed-pending"]').exists()).toBe(false)
+  })
+
   it('writes the upstream request id header into extra only when configured', async () => {
     const account = buildAccount()
     account.extra = { openai_compact_mode: 'force_on' }

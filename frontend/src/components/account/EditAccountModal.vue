@@ -2011,6 +2011,13 @@
             <Select v-model="codexFingerprintMode" data-testid="edit-codex-fingerprint-mode-select" :options="codexFingerprintModeOptions" />
           </div>
         </div>
+        <p
+          v-if="codexFingerprintSeedPending"
+          data-testid="edit-codex-fingerprint-seed-pending"
+          class="mt-2 text-xs text-amber-600 dark:text-amber-400"
+        >
+          {{ t('admin.accounts.openai.codexFingerprintSeedPending') }}
+        </p>
       </div>
 
       <!-- OpenAI 订阅档位手动覆盖（Plus/Pro/Free），仅 OAuth 非影子账号 -->
@@ -3096,6 +3103,17 @@ const openaiAPIKeyResponsesWebSocketV2Mode = ref<OpenAIWSMode>(OPENAI_WS_MODE_OF
 const codexCLIOnlyEnabled = ref(false)
 type CodexFingerprintMode = 'off' | 'device' | 'session' | 'full'
 const codexFingerprintMode = ref<CodexFingerprintMode>('off')
+// 存量账号迁移提示: 旧版本账号已持久化非 off 模式但没有系统托管的指纹种子,
+// 收敛在保存前不会生效; 保存后网关注入种子并开始收敛 (一次性身份轮换)。
+const codexFingerprintSeedMissing = ref(false)
+const codexFingerprintSeedPending = computed(
+  () =>
+    codexFingerprintSeedMissing.value &&
+    ['device', 'session', 'full'].includes(codexFingerprintMode.value)
+)
+const isCanonicalCodexFingerprintSeed = (value: unknown): boolean =>
+  typeof value === 'string' &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.trim())
 type CodexImageToolMode = 'inherit' | 'enabled' | 'disabled' | 'block'
 const codexImageToolMode = ref<CodexImageToolMode>('inherit')
 type AnthropicAPIKeyAuthScheme = 'x_api_key' | 'authorization_bearer'
@@ -3574,6 +3592,7 @@ const syncFormFromAccount = (newAccount: Account | null) => {
   openaiAPIKeyResponsesWebSocketV2Mode.value = OPENAI_WS_MODE_OFF
   codexCLIOnlyEnabled.value = false
   codexFingerprintMode.value = 'off'
+  codexFingerprintSeedMissing.value = false
   codexImageToolMode.value = 'inherit'
   anthropicPassthroughEnabled.value = false
   anthropicAPIKeyAuthScheme.value = 'x_api_key'
@@ -3633,6 +3652,8 @@ const syncFormFromAccount = (newAccount: Account | null) => {
       codexFingerprintMode.value = (['off', 'device', 'session', 'full'].includes(fpMode || '')
         ? fpMode as CodexFingerprintMode
         : 'off')
+      codexFingerprintSeedMissing.value = !isSparkShadow.value
+        && !isCanonicalCodexFingerprintSeed(extra?.codex_fingerprint_seed)
     }
     const credentials = newAccount.credentials as Record<string, unknown> | undefined
 		openaiAccountUserAgent.value = !isSparkShadow.value && typeof credentials?.user_agent === 'string'
