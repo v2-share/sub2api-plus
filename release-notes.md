@@ -1,32 +1,31 @@
-Sub2API Plus v0.2.4-fork.1
+Sub2API Plus v0.2.4-fork.2
 
 ## Highlights
 
-- Restricts OpenAI group quota follow-reset evidence to fresh weekly-window observations from real inference sessions.
-- Prevents WebSocket handshake headers and standalone quota refreshes from establishing or confirming group reset events.
-- Runs release metadata and finalization-tree validation only in the repository's supported platform containers.
+- Fixes the fork release pipeline so the published asset set matches the upstream Plus line: per-platform archives, checksums, and the model-pricing JSON plus manifest that previously failed validation.
+- Teaches the pricing manifest, update service, and release tooling the `vX.Y.Z-fork.N` tag format, so the fork line is self-consistent end to end.
+- Repairs the fork's CI: the Codex fingerprint mode tests now assert the documented `off` default, and the unchecked type assertion in the prompt-cache-key test is resolved.
+- Points every functional repository reference (installer, pricing manifest, self-update, compliance links, images) at `v2-share/sub2api-plus`.
 
 ## Changed
 
-- Updates the English and Chinese administration guidance to describe the inference-session baseline requirement.
-- Clarifies repository-wide agent rules, Windows WSL2 Docker validation, and the deployed-instance scope of the Sub2API admin skill.
-- Makes stale validation image cleanup deterministic without pruning unrelated runtime resources.
-- Forwards configured standard proxy variables into validation containers without exposing their values in commands or logs.
-- Reads exact pull-request base and head SHAs from the GitHub API so release promotion does not depend on unsupported `gh pr view` fields.
+- Synchronizes README (EN/中文/日本語), UPSTREAM.md, deploy guides, Compose files, and example configuration to the fork repository and the `v0.2.4-fork.2` version.
+- Publishes the fork release as the repository's `latest` release so the one-line installer can resolve it (the `-fork.N` suffix is a SemVer prerelease).
+- Extends `tools/` release checks (`check_release`, `release_docs`, `release_finalization`, `release_preflight`, `check_new_migrations`) to accept both release lines.
 
 ## Fixed
 
-- Removes the background quota polling path that could drive group reset state without user inference traffic.
-- Keeps WebSocket connection-time usage headers available for account cache refresh while excluding them from later turn reset evidence.
-- Preserves fresh HTTP and in-band WebSocket rate-limit observations across retries and pass-through adapters.
+- `pricing-manifest-build` no longer rejects `vX.Y.Z-fork.N`, which previously aborted the release at the pricing-asset step.
+- The GitHub Actions `goreleaser-config` job no longer fails on the fork version format.
+- GoReleaser's GHCR entries render even when the optional `SKIP_GHCR_IMAGES` variable is absent.
 
 ## Compatibility and migration
 
-No new database migration is required. Existing group follow-reset bindings wait for a real inference session on their configured OpenAI OAuth source before establishing a missing baseline or confirming off-schedule evidence. Standalone quota refreshes no longer advance that state.
+No new database migration is required and no configuration change is required for existing deployments. Operators upgrading from `v0.2.4-fork.1` should switch to the `v0.2.4-fork.2` GHCR tag or archive; `v0.2.4-fork.1` remains published for rollback.
 
 ## Known issues
 
-None.
+The `backend/repository.test` fixture from historical history remains in the repository and inflates clone size; it does not affect builds or releases.
 
 ## Upstream baseline
 

@@ -17,7 +17,7 @@ func rawManifest(t *testing.T, manifest Manifest) []byte {
 func TestParse(t *testing.T) {
 	want := Manifest{
 		Version:    "v0.1.169+custom.001",
-		PricingURL: "https://github.com/luckykuang/sub2api-plus/releases/download/v0.1.169%2Bcustom.001/model-pricing.json",
+		PricingURL: "https://github.com/v2-share/sub2api-plus/releases/download/v0.1.169%2Bcustom.001/model-pricing.json",
 		SHA256:     "6ed8c77d4f106ca99a1db4dc8f8bb5cae0ee708a1a13c07f82efd435dc1d6395",
 	}
 	raw := rawManifest(t, want)
@@ -57,11 +57,11 @@ func TestManifestValidateRequiresImmutableVersionedReleaseAsset(t *testing.T) {
 	}
 
 	for name, pricingURL := range map[string]string{
-		"mutable latest": "https://github.com/luckykuang/sub2api-plus/releases/latest/download/model-pricing.json",
-		"wrong version":  "https://github.com/luckykuang/sub2api-plus/releases/download/v0.1.170+custom.001/model-pricing.json",
-		"wrong asset":    "https://github.com/luckykuang/sub2api-plus/releases/download/v0.1.169+custom.001/other.json",
-		"query":          "https://github.com/luckykuang/sub2api-plus/releases/download/v0.1.169+custom.001/model-pricing.json?mutable=true",
-		"fragment":       "https://github.com/luckykuang/sub2api-plus/releases/download/v0.1.169+custom.001/model-pricing.json#mutable",
+		"mutable latest": "https://github.com/v2-share/sub2api-plus/releases/latest/download/model-pricing.json",
+		"wrong version":  "https://github.com/v2-share/sub2api-plus/releases/download/v0.1.170+custom.001/model-pricing.json",
+		"wrong asset":    "https://github.com/v2-share/sub2api-plus/releases/download/v0.1.169+custom.001/other.json",
+		"query":          "https://github.com/v2-share/sub2api-plus/releases/download/v0.1.169+custom.001/model-pricing.json?mutable=true",
+		"fragment":       "https://github.com/v2-share/sub2api-plus/releases/download/v0.1.169+custom.001/model-pricing.json#mutable",
 		"user info":      "https://user@github.com/luckykuang/sub2api-plus/releases/download/v0.1.169+custom.001/model-pricing.json",
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -70,7 +70,7 @@ func TestManifestValidateRequiresImmutableVersionedReleaseAsset(t *testing.T) {
 		})
 	}
 
-	manifest.PricingURL = "https://github.com/luckykuang/sub2api-plus/releases/download/v0.1.169%2Bcustom.001/model-pricing.json"
+	manifest.PricingURL = "https://github.com/v2-share/sub2api-plus/releases/download/v0.1.169%2Bcustom.001/model-pricing.json"
 	require.NoError(t, manifest.Validate())
 }
 

@@ -1,6 +1,6 @@
 [Unit]
 Description=Sub2API Plus - AI API Gateway Platform
-Documentation=https://github.com/luckykuang/sub2api-plus
+Documentation=https://github.com/v2-share/sub2api-plus
 After=network.target postgresql.service redis.service
 Wants=postgresql.service redis.service
 

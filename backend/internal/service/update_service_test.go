@@ -106,7 +106,7 @@ func TestUpdateServicePerformUpdatePropagatesLatestReleaseFetchFailure(t *testin
 
 func TestUpdateServiceDownloadAndVerifyArchiveUsesAssetNameWhenURLIsEncoded(t *testing.T) {
 	archiveName := fmt.Sprintf("sub2api_0.1.169+custom.001_%s_%s.tar.gz", runtime.GOOS, runtime.GOARCH)
-	downloadURL := fmt.Sprintf("https://github.com/LuckyKuang/sub2api-plus/releases/download/v0.1.169%%2Bcustom.001/sub2api_0.1.169%%2Bcustom.001_%s_%s.tar.gz", runtime.GOOS, runtime.GOARCH)
+	downloadURL := fmt.Sprintf("https://github.com/v2-share/sub2api-plus/releases/download/v0.1.169%%2Bcustom.001/sub2api_0.1.169%%2Bcustom.001_%s_%s.tar.gz", runtime.GOOS, runtime.GOARCH)
 	payload := []byte("release archive")
 	expectedHash := fmt.Sprintf("%x", sha256.Sum256(payload))
 

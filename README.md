@@ -4,7 +4,7 @@
 
 # Sub2API Plus
 
-[![CI](https://github.com/LuckyKuang/sub2api-plus/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/LuckyKuang/sub2api-plus/actions/workflows/backend-ci.yml)
+[![CI](https://github.com/v2-share/sub2api-plus/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/v2-share/sub2api-plus/actions/workflows/backend-ci.yml)
 [![License](https://img.shields.io/badge/license-LGPL--3.0--or--later-blue.svg)](LICENSE)
 
 **AI API gateway for subscription quota distribution**
@@ -54,8 +54,8 @@ Simple mode uses `RUN_MODE=simple`. Production also requires
 ### Linux binary lifecycle
 
 The installer supports fresh installation, version pinning or rollback, and
-uninstallation. Published binary tags use the immutable
-`vX.Y.Z+custom.NNN` format.
+uninstallation. Published binary tags use the immutable `vX.Y.Z-fork.N`
+format on this fork; the upstream Plus line uses `vX.Y.Z+custom.NNN`.
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash
@@ -72,13 +72,13 @@ usable; replace its immutable tag with another value returned by
 `list-versions` when needed:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- install --version 'v0.2.4-fork.1'
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- install --version 'v0.2.4-fork.2'
 ```
 
 Roll back an existing binary installation to an earlier published version:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- rollback 'v0.2.4+custom.003'
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- rollback 'v0.2.4-fork.1'
 ```
 
 Remove the service and binary while preserving `/etc/sub2api`:
@@ -165,15 +165,16 @@ Details:
 - [Asynchronous image tasks](docs/ASYNC_IMAGE_TASKS.md)
 
 <!-- readme-section:release-tags -->
-<!-- readme-release-format:vX.Y.Z+custom.NNN|vX.Y.Z-custom.NNN -->
+<!-- readme-release-format:vX.Y.Z+custom.NNN|vX.Y.Z-custom.NNN|vX.Y.Z-fork.N -->
 ## Release and Image Tags
 
-Custom releases use the following formats:
+Fork releases use the following formats (the upstream Plus line uses
+`vX.Y.Z+custom.NNN` / `X.Y.Z+custom.NNN`):
 
 ```text
-Git/GitHub: vX.Y.Z+custom.NNN
-Application: X.Y.Z+custom.NNN
-GHCR:        ghcr.io/luckykuang/sub2api-plus:vX.Y.Z-custom.NNN
+Git/GitHub: vX.Y.Z-fork.N
+Application: X.Y.Z-fork.N
+GHCR:        ghcr.io/v2-share/sub2api-plus:vX.Y.Z-fork.N
 ```
 
 Pin the immutable GHCR version tag for reproducible production deployments.

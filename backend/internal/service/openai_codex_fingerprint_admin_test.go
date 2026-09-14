@@ -46,7 +46,7 @@ func TestAdminServiceUpdateAccountRepairsMalformedCodexFingerprintModeWhenFullEx
 	})
 
 	require.NoError(t, err)
-	require.Equal(t, "device", account.Extra[CodexFingerprintModeExtraKey])
+	require.Equal(t, "off", account.Extra[CodexFingerprintModeExtraKey])
 }
 
 func TestAdminServiceUpdateAccountRepairsMalformedCodexFingerprintModeWhenExtraOmitted(t *testing.T) {
@@ -67,7 +67,7 @@ func TestAdminServiceUpdateAccountRepairsMalformedCodexFingerprintModeWhenExtraO
 
 	require.NoError(t, err)
 	require.Equal(t, "after", account.Name)
-	require.Equal(t, "device", account.Extra[CodexFingerprintModeExtraKey])
+	require.Equal(t, "off", account.Extra[CodexFingerprintModeExtraKey])
 }
 
 func TestAccountServiceUpdatePreservesExplicitCodexFingerprintModeWhenReplacementOmitsField(t *testing.T) {
@@ -105,7 +105,7 @@ func TestAccountServiceUpdateRepairsMalformedCodexFingerprintModeWhenReplacement
 	account, err := svc.Update(context.Background(), 1, UpdateAccountRequest{Extra: &replacement})
 
 	require.NoError(t, err)
-	require.Equal(t, "device", account.Extra[CodexFingerprintModeExtraKey])
+	require.Equal(t, "off", account.Extra[CodexFingerprintModeExtraKey])
 }
 
 func TestAccountServiceUpdateRepairsMalformedCodexFingerprintModeWhenExtraOmitted(t *testing.T) {
@@ -125,5 +125,5 @@ func TestAccountServiceUpdateRepairsMalformedCodexFingerprintModeWhenExtraOmitte
 
 	require.NoError(t, err)
 	require.Equal(t, "after", account.Name)
-	require.Equal(t, "device", account.Extra[CodexFingerprintModeExtraKey])
+	require.Equal(t, "off", account.Extra[CodexFingerprintModeExtraKey])
 }

@@ -15,7 +15,10 @@ from typing import Sequence
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TAG_TEXT = r"v\d+\.\d+\.\d+\+custom\.(?:00[1-9]|0[1-9]\d|[1-9]\d{2})"
+TAG_TEXT = (
+    r"v\d+\.\d+\.\d+(?:\+custom\.(?:00[1-9]|0[1-9]\d|[1-9]\d{2})"
+    r"|-fork\.[1-9]\d*)"
+)
 TAG_RE = re.compile(rf"^{TAG_TEXT}$")
 MAPPING_ROW_RE = re.compile(
     rf"^(?P<prefix>\|\s*`(?P<tag>{TAG_TEXT})`\s*\|\s*`[^`]+`\s*\|\s*`[0-9a-f]{{40}}`\s*\|\s*)"
@@ -134,14 +137,17 @@ def tag_from_branch(branch: str) -> str:
         )
     suffix = branch.removeprefix(FINALIZATION_PREFIX)
     match = re.fullmatch(
-        r"(\d+\.\d+\.\d+)-custom\.(00[1-9]|0[1-9]\d|[1-9]\d{2})",
+        r"(\d+\.\d+\.\d+)(?:-custom\.(00[1-9]|0[1-9]\d|[1-9]\d{2})|-fork\.([1-9]\d*))",
         suffix,
     )
     if match is None:
         raise ReleaseFinalizationError(
             f"invalid deterministic release-finalization branch: {branch}"
         )
-    tag = f"v{match.group(1)}+custom.{match.group(2)}"
+    if match.group(3) is not None:
+        tag = f"v{match.group(1)}-fork.{match.group(3)}"
+    else:
+        tag = f"v{match.group(1)}+custom.{match.group(2)}"
     if finalization_branch(tag) != branch:
         raise ReleaseFinalizationError(
             f"release-finalization branch does not round-trip to {tag}"

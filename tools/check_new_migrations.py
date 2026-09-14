@@ -93,7 +93,7 @@ def resolve_release_base(
 ) -> str:
     if release_docs.version_key(target) is None:
         raise ValueError(
-            f"invalid target release {target!r}; expected vX.Y.Z+custom.NNN"
+            f"invalid target release {target!r}; expected vX.Y.Z+custom.NNN or vX.Y.Z-fork.N"
         )
     if statuses is None:
         statuses = release_docs.parse_upstream_statuses(

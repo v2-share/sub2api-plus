@@ -622,7 +622,7 @@ class PullRequestQueryTest(unittest.TestCase):
             [
                 {
                     "number": 22,
-                    "url": "https://github.com/LuckyKuang/sub2api-plus/pull/22",
+                    "url": "https://github.com/v2-share/sub2api-plus/pull/22",
                     "isDraft": False,
                     "headRefOid": "b" * 40,
                     "body": "Summary",
@@ -635,7 +635,7 @@ class PullRequestQueryTest(unittest.TestCase):
             side_effect=[listing, base_oid],
         ) as capture:
             prs = push_cli.open_pull_requests(
-                "LuckyKuang/sub2api-plus",
+                "v2-share/sub2api-plus",
                 "feature",
                 "main",
             )
@@ -648,7 +648,7 @@ class PullRequestQueryTest(unittest.TestCase):
             [
                 "gh",
                 "api",
-                "repos/LuckyKuang/sub2api-plus/pulls/22",
+                "repos/v2-share/sub2api-plus/pulls/22",
                 "--jq",
                 ".base.sha",
             ],
@@ -658,13 +658,13 @@ class PullRequestQueryTest(unittest.TestCase):
 
 class PullRequestUpdateTest(unittest.TestCase):
     def test_updates_validation_marker_through_rest_api(self) -> None:
-        repository = "LuckyKuang/sub2api-plus"
+        repository = "v2-share/sub2api-plus"
         proof = push_cli.ValidationProof("a" * 40, "b" * 40)
         stale_proof = push_cli.ValidationProof("c" * 40, "d" * 40)
         existing_body = push_cli.with_validation_marker("Summary", stale_proof)
         pull_request = {
             "number": 22,
-            "url": "https://github.com/LuckyKuang/sub2api-plus/pull/22",
+            "url": "https://github.com/v2-share/sub2api-plus/pull/22",
             "headRefOid": proof.head,
             "baseRefOid": proof.base,
             "body": existing_body,
@@ -696,7 +696,7 @@ class PullRequestUpdateTest(unittest.TestCase):
                 "api",
                 "--method",
                 "PATCH",
-                "repos/LuckyKuang/sub2api-plus/pulls/22",
+                "repos/v2-share/sub2api-plus/pulls/22",
                 "-f",
                 f"body={expected_body}",
             ],
@@ -1119,7 +1119,7 @@ class MainFlowTest(unittest.TestCase):
             def _inner(*_args: object, **_kwargs: object) -> object:
                 order.append(name)
                 if name == "github_gate":
-                    return "LuckyKuang/sub2api-plus"
+                    return "v2-share/sub2api-plus"
                 if name == "current_branch":
                     return "feature/new-features-and-fixes"
                 if name == "repository_default_branch":
@@ -1174,7 +1174,7 @@ class MainFlowTest(unittest.TestCase):
         args = self.args("ensure")
         with (
             mock.patch.object(push_cli, "parse_args", return_value=args),
-            mock.patch.object(push_cli, "github_gate", return_value="LuckyKuang/sub2api-plus"),
+            mock.patch.object(push_cli, "github_gate", return_value="v2-share/sub2api-plus"),
             mock.patch.object(push_cli, "current_branch", return_value="feature"),
             mock.patch.object(
                 push_cli,
@@ -1201,7 +1201,7 @@ class MainFlowTest(unittest.TestCase):
         args = self.args("check")
         with (
             mock.patch.object(push_cli, "parse_args", return_value=args),
-            mock.patch.object(push_cli, "github_gate", return_value="LuckyKuang/sub2api-plus"),
+            mock.patch.object(push_cli, "github_gate", return_value="v2-share/sub2api-plus"),
             mock.patch.object(push_cli, "current_branch", return_value="feature"),
             mock.patch.object(push_cli, "repository_default_branch", return_value="main"),
             mock.patch.object(push_cli, "probe_runtime", return_value=runtime),
@@ -1243,7 +1243,7 @@ class MainFlowTest(unittest.TestCase):
         args = self.args("push")
         with (
             mock.patch.object(push_cli, "parse_args", return_value=args),
-            mock.patch.object(push_cli, "github_gate", return_value="LuckyKuang/sub2api-plus"),
+            mock.patch.object(push_cli, "github_gate", return_value="v2-share/sub2api-plus"),
             mock.patch.object(push_cli, "current_branch", return_value="feature"),
             mock.patch.object(push_cli, "repository_default_branch", return_value="main"),
             mock.patch.object(push_cli, "require_working_branch"),
@@ -1263,7 +1263,7 @@ class MainFlowTest(unittest.TestCase):
         args = self.args("push")
         with (
             mock.patch.object(push_cli, "parse_args", return_value=args),
-            mock.patch.object(push_cli, "github_gate", return_value="LuckyKuang/sub2api-plus"),
+            mock.patch.object(push_cli, "github_gate", return_value="v2-share/sub2api-plus"),
             mock.patch.object(push_cli, "current_branch", return_value="main"),
             mock.patch.object(push_cli, "repository_default_branch", return_value="main"),
             mock.patch.object(push_cli, "push_branch") as push,
@@ -1287,7 +1287,7 @@ class MainFlowTest(unittest.TestCase):
 
         with (
             mock.patch.object(push_cli, "parse_args", return_value=args),
-            mock.patch.object(push_cli, "github_gate", return_value="LuckyKuang/sub2api-plus"),
+            mock.patch.object(push_cli, "github_gate", return_value="v2-share/sub2api-plus"),
             mock.patch.object(push_cli, "current_branch", return_value="feature"),
             mock.patch.object(push_cli, "repository_default_branch", return_value="main"),
             mock.patch.object(push_cli, "require_working_branch"),
@@ -1331,7 +1331,7 @@ class MainFlowTest(unittest.TestCase):
 
         with (
             mock.patch.object(push_cli, "parse_args", return_value=args),
-            mock.patch.object(push_cli, "github_gate", return_value="LuckyKuang/sub2api-plus"),
+            mock.patch.object(push_cli, "github_gate", return_value="v2-share/sub2api-plus"),
             mock.patch.object(push_cli, "current_branch", return_value="release/finalize-1.2.3-custom.009"),
             mock.patch.object(push_cli, "repository_default_branch", return_value="main"),
             mock.patch.object(push_cli, "require_working_branch"),

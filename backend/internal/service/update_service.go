@@ -29,7 +29,7 @@ var (
 
 const (
 	updateCacheTTL = 1200 // 20 minutes
-	githubRepo     = "luckykuang/sub2api-plus"
+	githubRepo     = "v2-share/sub2api-plus"
 
 	// Security: allowed download domains for updates
 	allowedDownloadHost = "github.com"
@@ -409,7 +409,7 @@ func (s *UpdateService) fetchLatestRelease(ctx context.Context) (*UpdateInfo, er
 
 	latestVersion := strings.TrimPrefix(release.TagName, "v")
 	if _, ok := parseForkReleaseVersion(latestVersion); !ok {
-		return nil, fmt.Errorf("latest release tag %q is not a valid fork version (expected vX.Y.Z+custom.NNN)", release.TagName)
+		return nil, fmt.Errorf("latest release tag %q is not a valid fork version (expected vX.Y.Z+custom.NNN or vX.Y.Z-fork.N)", release.TagName)
 	}
 
 	assets := make([]Asset, len(release.Assets))
@@ -659,8 +659,9 @@ func (s *UpdateService) saveToCache(ctx context.Context, info *UpdateInfo) {
 	_ = s.cache.SetUpdateInfo(ctx, string(data), time.Duration(updateCacheTTL)*time.Second)
 }
 
-// updateVersion is the release format used by this fork. The custom iteration
-// is build metadata under SemVer, but it must affect update ordering here.
+// updateVersion is the release format used by this fork. The trailing
+// iteration (+custom.NNN or -fork.N) is build metadata under SemVer, but it
+// must affect update ordering here.
 type updateVersion struct {
 	base            [3]int
 	customIteration int
@@ -701,12 +702,32 @@ func compareVersions(current, latest string) int {
 
 func parseVersion(v string) (updateVersion, bool) {
 	v = strings.TrimPrefix(strings.TrimSpace(v), "v")
-	parts := strings.Split(v, "+")
-	if len(parts) > 2 || parts[0] == "" {
+	if v == "" {
 		return updateVersion{}, false
 	}
 
-	baseParts := strings.Split(parts[0], ".")
+	baseText := v
+	iterationText := ""
+	hasIteration := false
+	if index := strings.Index(v, "-fork."); index >= 0 {
+		baseText = v[:index]
+		iterationText = v[index+len("-fork."):]
+		hasIteration = true
+	} else if index := strings.Index(v, "+"); index >= 0 {
+		suffix := v[index+1:]
+		if strings.Contains(suffix, "+") {
+			return updateVersion{}, false
+		}
+		const customPrefix = "custom."
+		if !strings.HasPrefix(suffix, customPrefix) {
+			return updateVersion{}, false
+		}
+		baseText = v[:index]
+		iterationText = strings.TrimPrefix(suffix, customPrefix)
+		hasIteration = true
+	}
+
+	baseParts := strings.Split(baseText, ".")
 	if len(baseParts) != 3 {
 		return updateVersion{}, false
 	}
@@ -723,15 +744,10 @@ func parseVersion(v string) (updateVersion, bool) {
 		result.base[i] = parsed
 	}
 
-	if len(parts) == 1 {
+	if !hasIteration {
 		return result, true
 	}
 
-	const customPrefix = "custom."
-	if !strings.HasPrefix(parts[1], customPrefix) {
-		return updateVersion{}, false
-	}
-	iterationText := strings.TrimPrefix(parts[1], customPrefix)
 	if iterationText == "" {
 		return updateVersion{}, false
 	}

@@ -13,7 +13,10 @@ import (
 	"strings"
 )
 
-var releaseVersionPattern = regexp.MustCompile(`^v(\d+)\.(\d+)\.(\d+)\+custom\.(\d{3})$`)
+// releaseVersionPattern accepts both fork release lines: the upstream Plus
+// vX.Y.Z+custom.NNN tags and the v2-share vX.Y.Z-fork.N tags. The trailing
+// number is the iteration within the same upstream baseline.
+var releaseVersionPattern = regexp.MustCompile(`^v(\d+)\.(\d+)\.(\d+)(?:\+custom\.(\d{3})|-fork\.([0-9]+))$`)
 
 // Manifest binds a release version to an immutable pricing asset and digest.
 type Manifest struct {
@@ -73,7 +76,7 @@ func Parse(raw []byte) (Manifest, error) {
 }
 
 // CompareVersion returns -1, 0, or 1 when left is older than, equal to, or
-// newer than right. Pricing releases follow the repository's custom tag format.
+// newer than right. Pricing releases follow the repository's fork tag format.
 func CompareVersion(left, right string) (int, error) {
 	leftParts, err := parseVersion(left)
 	if err != nil {
@@ -100,11 +103,19 @@ func parseVersion(raw string) ([4]int, error) {
 	}
 	matches := releaseVersionPattern.FindStringSubmatch(raw)
 	if matches == nil {
-		return [4]int{}, fmt.Errorf("must use vX.Y.Z+custom.NNN format")
+		return [4]int{}, fmt.Errorf("must use vX.Y.Z+custom.NNN or vX.Y.Z-fork.N format")
+	}
+	iteration := matches[4]
+	if iteration == "" {
+		iteration = matches[5]
 	}
 	var result [4]int
-	for i := 0; i < len(result); i++ {
-		value, err := strconv.Atoi(matches[i+1])
+	for i := 0; i < 4; i++ {
+		component := matches[i+1]
+		if i == 3 {
+			component = iteration
+		}
+		value, err := strconv.Atoi(component)
 		if err != nil {
 			return [4]int{}, fmt.Errorf("parse version component: %w", err)
 		}

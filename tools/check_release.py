@@ -13,7 +13,9 @@ import release_docs
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TAG_RE = re.compile(r"^v(\d+\.\d+\.\d+\+custom\.(\d{3}))$")
+TAG_RE = re.compile(
+    r"^v(?:\d+\.\d+\.\d+\+custom\.(\d{3})|\d+\.\d+\.\d+-fork\.(\d+))$"
+)
 REQUIRED_NOTE_SECTIONS = (
     "Highlights",
     "Compatibility and migration",
@@ -22,8 +24,8 @@ REQUIRED_NOTE_SECTIONS = (
 )
 ALLOWED_STATUSES = {"planned", "published", "historical", "withdrawn", "invalid"}
 INSTALLER_VERSION_FRAGMENTS = (
-    r'[[ "$1" =~ ^v[0-9]+\.[0-9]+\.[0-9]+\+custom\.[0-9]{3}$ ]]',
-    r"grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+(\+custom\.[0-9]{3})?'",
+    r'[[ "$1" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(\+custom\.[0-9]{3}|-fork\.[0-9]+)$ ]]',
+    r"grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+(\+custom\.[0-9]{3}|-fork\.[0-9]+)?'",
 )
 
 
@@ -190,11 +192,16 @@ def main() -> int:
     tag = args.tag or f"v{embedded}"
     match = TAG_RE.fullmatch(tag)
     if not match:
-        fail(f"invalid release tag {tag!r}; expected vX.Y.Z+custom.NNN", errors)
+        fail(
+            f"invalid release tag {tag!r}; expected vX.Y.Z+custom.NNN or vX.Y.Z-fork.N",
+            errors,
+        )
         version = tag.removeprefix("v")
     else:
-        version, iteration = match.groups()
-        if iteration == "000":
+        version = tag.removeprefix("v")
+        custom_iteration, fork_iteration = match.groups()
+        iteration = custom_iteration or fork_iteration
+        if custom_iteration == "000":
             fail("custom iteration must be between 001 and 999", errors)
 
     if not args.mapping_only:

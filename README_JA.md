@@ -4,7 +4,7 @@
 
 # Sub2API Plus
 
-[![CI](https://github.com/LuckyKuang/sub2api-plus/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/LuckyKuang/sub2api-plus/actions/workflows/backend-ci.yml)
+[![CI](https://github.com/v2-share/sub2api-plus/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/v2-share/sub2api-plus/actions/workflows/backend-ci.yml)
 [![License](https://img.shields.io/badge/license-LGPL--3.0--or--later-blue.svg)](LICENSE)
 
 **サブスクリプションクォータ配分向け AI API ゲートウェイ**
@@ -52,8 +52,9 @@ Sub2API Plus は、プラットフォーム発行の API キーを通じて対�
 ### Linux バイナリのインストール、バージョン指定、アンインストール
 
 インストーラーは新規インストール、バージョン固定またはロールバック、
-アンインストールに対応します。公開済みバイナリは不変の
-`vX.Y.Z+custom.NNN` タグ形式を使用します。
+アンインストールに対応します。この fork の公開済みバイナリは不変の
+`vX.Y.Z-fork.N` タグ形式を使用します。上流 Plus ラインは
+`vX.Y.Z+custom.NNN` を使用します。
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash
@@ -70,13 +71,13 @@ curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/in
 が返す別のタグへ置き換えてください：
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- install --version 'v0.2.4-fork.1'
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- install --version 'v0.2.4-fork.2'
 ```
 
 既存のバイナリインストールを以前の公開済みバージョンへロールバックします：
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- rollback 'v0.2.4+custom.003'
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- rollback 'v0.2.4-fork.1'
 ```
 
 サービスとバイナリを削除し、`/etc/sub2api` は保持します：
@@ -166,15 +167,16 @@ sudo systemctl reload nginx
 - [非同期画像タスク](docs/ASYNC_IMAGE_TASKS.md)
 
 <!-- readme-section:release-tags -->
-<!-- readme-release-format:vX.Y.Z+custom.NNN|vX.Y.Z-custom.NNN -->
+<!-- readme-release-format:vX.Y.Z+custom.NNN|vX.Y.Z-custom.NNN|vX.Y.Z-fork.N -->
 ## リリースとイメージタグ
 
-カスタムリリースは次の形式を使用します：
+この fork のリリースは次の形式を使用します（上流 Plus ラインは
+`vX.Y.Z+custom.NNN` / `X.Y.Z+custom.NNN`）：
 
 ```text
-Git/GitHub: vX.Y.Z+custom.NNN
-アプリ:      X.Y.Z+custom.NNN
-GHCR:       ghcr.io/luckykuang/sub2api-plus:vX.Y.Z-custom.NNN
+Git/GitHub: vX.Y.Z-fork.N
+アプリ:      X.Y.Z-fork.N
+GHCR:       ghcr.io/v2-share/sub2api-plus:vX.Y.Z-fork.N
 ```
 
 再現可能な本番デプロイでは不変の GHCR バージョンタグを固定してください。

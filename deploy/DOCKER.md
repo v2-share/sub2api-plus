@@ -10,7 +10,7 @@ docker run -d \
   -p 8080:8080 \
   -e DATABASE_URL="postgres://user:pass@host:5432/sub2api" \
   -e REDIS_URL="redis://host:6379" \
-  ghcr.io/luckykuang/sub2api-plus:latest
+  ghcr.io/v2-share/sub2api-plus:latest
 ```
 
 ## Docker Compose
@@ -20,7 +20,7 @@ version: '3.8'
 
 services:
   sub2api:
-    image: ghcr.io/luckykuang/sub2api-plus:latest
+    image: ghcr.io/v2-share/sub2api-plus:latest
     ports:
       - "8080:8080"
     environment:
@@ -88,23 +88,24 @@ application container after changing these values.
 ## Tags
 
 - `latest` - Latest stable release
-- `vX.Y.Z-custom.NNN` - Immutable fork release, for example `v0.2.4-custom.004`
+- `vX.Y.Z-fork.N` - Immutable fork release, for example `v0.2.4-fork.2`
+- `vX.Y.Z-custom.NNN` - Upstream Plus release line
 - `x.y` - Latest patch of minor version
 - `x` - Latest minor of major version
 
-Git and GitHub Releases use `vX.Y.Z+custom.NNN`. The release workflow
-preserves the leading `v` and replaces only `+` with `-` to produce the
-OCI-compatible image tag. For example:
+This fork publishes `vX.Y.Z-fork.N` tags; the OCI image tag is identical to
+the Git tag. The upstream Plus line uses `vX.Y.Z+custom.NNN` and replaces
+only `+` with `-` to produce its OCI-compatible image tag. For example:
 
 ```text
-Git/GitHub: v0.2.4-fork.1
-GHCR:       ghcr.io/luckykuang/sub2api-plus:v0.2.4-custom.004
+Git/GitHub: v0.2.4-fork.2
+GHCR:       ghcr.io/v2-share/sub2api-plus:v0.2.4-fork.2
 ```
 
 Pin the immutable release tag in production. Use `latest` only when automatic
-movement to the newest custom release is intentional.
+movement to the newest fork release is intentional.
 
 ## Links
 
-- [GitHub Repository](https://github.com/luckykuang/sub2api-plus)
-- [Documentation](https://github.com/luckykuang/sub2api-plus#readme)
+- [GitHub Repository](https://github.com/v2-share/sub2api-plus)
+- [Documentation](https://github.com/v2-share/sub2api-plus#readme)

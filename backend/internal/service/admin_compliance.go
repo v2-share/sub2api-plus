@@ -17,8 +17,8 @@ const (
 	AdminComplianceVersion        = "v2026.07.25-plus.1"
 	AdminComplianceDocumentPathZH = "docs/legal/admin-compliance.zh.md"
 	AdminComplianceDocumentPathEN = "docs/legal/admin-compliance.en.md"
-	AdminComplianceDocumentURLZH  = "https://github.com/luckykuang/sub2api-plus/blob/main/docs/legal/admin-compliance.zh.md"
-	AdminComplianceDocumentURLEN  = "https://github.com/luckykuang/sub2api-plus/blob/main/docs/legal/admin-compliance.en.md"
+	AdminComplianceDocumentURLZH  = "https://github.com/v2-share/sub2api-plus/blob/main/docs/legal/admin-compliance.zh.md"
+	AdminComplianceDocumentURLEN  = "https://github.com/v2-share/sub2api-plus/blob/main/docs/legal/admin-compliance.en.md"
 	AdminComplianceAckPhraseZH    = "我已阅读、理解并同意 Sub2API Plus 部署与运营合规承诺"
 	AdminComplianceAckPhraseEN    = "I have read, understood, and agree to the Sub2API Plus Deployment and Operation Compliance Commitment"
 

@@ -25,7 +25,7 @@ container --version
 ## Quick Start
 
 ```bash
-git clone https://github.com/luckykuang/sub2api-plus.git
+git clone https://github.com/v2-share/sub2api-plus.git
 cd sub2api-plus/deploy
 
 # Creates .env with random PostgreSQL, JWT, and TOTP secrets.
@@ -248,7 +248,7 @@ export SUB2API_ENV_FILE=/absolute/path/to/sub2api.env
 Apple-specific image overrides are available:
 
 ```dotenv
-APPLE_CONTAINER_SUB2API_IMAGE=ghcr.io/luckykuang/sub2api-plus:latest
+APPLE_CONTAINER_SUB2API_IMAGE=ghcr.io/v2-share/sub2api-plus:latest
 APPLE_CONTAINER_SUB2API_BINARY=
 APPLE_CONTAINER_SUB2API_RESOURCES_DIR=
 APPLE_CONTAINER_POSTGRES_IMAGE=postgres:18-alpine
@@ -260,28 +260,28 @@ For local secondary development when the Apple Builder is unavailable, build a L
 
 ### Custom Image Version
 
-Git and GitHub Releases use `vX.Y.Z+custom.NNN`; the application embeds the
-same value without the leading `v`. Because OCI image tags do not permit `+`,
-the release workflow preserves the leading `v` and replaces only `+` with
-`-`. The current mapping is:
+This fork publishes `vX.Y.Z-fork.N` tags; the application embeds the same
+value without the leading `v`, and the OCI image tag is identical to the Git
+tag. (The upstream Plus line uses `vX.Y.Z+custom.NNN`, whose OCI tag replaces
+only `+` with `-`.) The current mapping is:
 
 ```text
-Git/GitHub:         v0.2.4-fork.1
-Application:        0.2.4-fork.1
-Apple/OCI image:    ghcr.io/luckykuang/sub2api-plus:v0.2.4-custom.004
+Git/GitHub:         v0.2.4-fork.2
+Application:        0.2.4-fork.2
+Apple/OCI image:    ghcr.io/v2-share/sub2api-plus:v0.2.4-fork.2
 ```
 
 Use the following values when building or publishing this OCI image:
 
 ```bash
 docker build \
-  --build-arg VERSION=0.2.4-fork.1 \
-  --tag ghcr.io/luckykuang/sub2api-plus:v0.2.4-custom.004 \
+  --build-arg VERSION=0.2.4-fork.2 \
+  --tag ghcr.io/v2-share/sub2api-plus:v0.2.4-fork.2 \
   .
 ```
 
 After that image is available to the Apple `container` runtime, set
-`APPLE_CONTAINER_SUB2API_IMAGE=ghcr.io/luckykuang/sub2api-plus:v0.2.4-custom.004`. Until then, keep
+`APPLE_CONTAINER_SUB2API_IMAGE=ghcr.io/v2-share/sub2api-plus:v0.2.4-fork.2`. Until then, keep
 the published image as the runtime base and use `APPLE_CONTAINER_SUB2API_BINARY`
 for the custom binary.
 
@@ -406,7 +406,7 @@ To restore these backups into an existing stack, first ensure the image versions
 
 # Remove only the app container so a helper can mount its named volume.
 container delete sub2api-apple
-SUB2API_IMAGE=ghcr.io/luckykuang/sub2api-plus:latest # Match APPLE_CONTAINER_SUB2API_IMAGE in .env.
+SUB2API_IMAGE=ghcr.io/v2-share/sub2api-plus:latest # Match APPLE_CONTAINER_SUB2API_IMAGE in .env.
 container run --rm --name sub2api-apple-data-restore \
   --entrypoint /bin/sh \
   --volume sub2api-apple-data:/restore \

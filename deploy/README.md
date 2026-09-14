@@ -4,13 +4,14 @@ This directory contains files for deploying Sub2API Plus on Linux servers and Ap
 
 ## Release Version Mapping
 
-Git tags and GitHub Releases use `vX.Y.Z+custom.NNN`. The release workflow
-derives the OCI image tag by preserving the leading `v` and replacing only
-`+` with `-`.
+This fork publishes `vX.Y.Z-fork.N` tags: Git tags and GitHub Releases keep
+the `v` prefix and the OCI image tag is identical. The upstream Plus line
+continues to use `vX.Y.Z+custom.NNN`, whose OCI tag replaces only `+` with
+`-`.
 
 ```text
-Git/GitHub: v0.2.4-fork.1
-GHCR:       ghcr.io/luckykuang/sub2api-plus:v0.2.4-custom.004
+Git/GitHub: v0.2.4-fork.2
+GHCR:       ghcr.io/v2-share/sub2api-plus:v0.2.4-fork.2
 ```
 
 Pin the GHCR version tag for reproducible deployments. See
@@ -91,10 +92,10 @@ Use the automated preparation script for the easiest setup:
 
 ```bash
 # Download and run the preparation script
-curl -sSL https://raw.githubusercontent.com/luckykuang/sub2api-plus/main/deploy/docker-deploy.sh | bash
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/docker-deploy.sh | bash
 
 # Or download first, then run
-curl -sSL https://raw.githubusercontent.com/luckykuang/sub2api-plus/main/deploy/docker-deploy.sh -o docker-deploy.sh
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/docker-deploy.sh -o docker-deploy.sh
 chmod +x docker-deploy.sh
 ./docker-deploy.sh
 ```
@@ -127,7 +128,7 @@ If you prefer manual control:
 
 ```bash
 # Clone repository
-git clone https://github.com/luckykuang/sub2api-plus.git
+git clone https://github.com/v2-share/sub2api-plus.git
 cd sub2api-plus/deploy
 
 # Configure environment
@@ -507,12 +508,12 @@ For production servers using systemd.
 ### One-Line Installation
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/luckykuang/sub2api-plus/main/deploy/install.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash
 ```
 
 ### Manual Installation
 
-1. Download the latest release from [GitHub Releases](https://github.com/luckykuang/sub2api-plus/releases)
+1. Download the latest release from [GitHub Releases](https://github.com/v2-share/sub2api-plus/releases)
 2. Extract and copy the binary to `/opt/sub2api/`
 3. Copy `sub2api.service` to `/etc/systemd/system/`
 4. Run:
@@ -526,8 +527,8 @@ curl -sSL https://raw.githubusercontent.com/luckykuang/sub2api-plus/main/deploy/
 ### Installer Commands
 
 The streamed form works without keeping a local copy of the script. Use a tag
-reported by `list-versions`; the installer accepts only the canonical
-`vX.Y.Z+custom.NNN` release format.
+reported by `list-versions`; the installer accepts the `vX.Y.Z-fork.N` format
+published by this fork (and the upstream `vX.Y.Z+custom.NNN` format).
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash
@@ -544,13 +545,13 @@ Replace the immutable tag with another value reported by `list-versions` when
 needed:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- install --version 'v0.2.4-fork.1'
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- install --version 'v0.2.4-fork.2'
 ```
 
 Roll back an existing binary installation to an earlier published version:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- rollback 'v0.2.4+custom.003'
+curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | sudo bash -s -- rollback 'v0.2.4-fork.1'
 ```
 
 Upgrade to the latest release:
@@ -574,13 +575,13 @@ curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/in
 For a downloaded `install.sh`, invoke one operation at a time. For example:
 
 ```bash
-sudo ./install.sh install --version 'v0.2.4-fork.1'
+sudo ./install.sh install --version 'v0.2.4-fork.2'
 ```
 
 Roll back a downloaded-script installation one operation at a time:
 
 ```bash
-sudo ./install.sh rollback 'v0.2.4+custom.003'
+sudo ./install.sh rollback 'v0.2.4-fork.1'
 ```
 
 Or uninstall while preserving `/etc/sub2api`:

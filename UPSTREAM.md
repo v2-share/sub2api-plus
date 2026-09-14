@@ -77,6 +77,7 @@ for public API changes, migrations, defaults, and validation boundaries.
 | `v0.2.4+custom.002` | `v0.2.4` | `5de5e2bed035d43591a2e10e51f420ef6a84eb98` | published |
 | `v0.2.4+custom.003` | `v0.2.4` | `5de5e2bed035d43591a2e10e51f420ef6a84eb98` | published |
 | `v0.2.4-fork.1` | `v0.2.4` | `5de5e2bed035d43591a2e10e51f420ef6a84eb98` | published |
+| `v0.2.4-fork.2` | `v0.2.4` | `5de5e2bed035d43591a2e10e51f420ef6a84eb98` | published |
 
 `v0.1.166+custom.007` is marked invalid because its tag contains embedded and
 documented version `0.1.166+custom.006`. Remote Release and OCI artifact status
@@ -85,25 +86,28 @@ still require a maintainer audit. Do not reuse or retag `.007`.
 ## Current Version
 
 ```text
-Git/GitHub: v0.2.4-fork.1
-Application: 0.2.4-fork.1
-GHCR: ghcr.io/luckykuang/sub2api-plus:v0.2.4-custom.004
+Git/GitHub: v0.2.4-fork.2
+Application: 0.2.4-fork.2
+GHCR: ghcr.io/v2-share/sub2api-plus:v0.2.4-fork.2
 ```
 
 ## Naming
 
-- Git tags and GitHub Releases: `vX.Y.Z+custom.NNN`
-- Embedded application versions: `X.Y.Z+custom.NNN`
-- OCI tags: `vX.Y.Z-custom.NNN`
-- `NNN` is a three-digit iteration from `001` to `999`.
+This fork publishes `vX.Y.Z-fork.N`: the Git tag, GitHub Release, embedded
+application version `X.Y.Z-fork.N`, and OCI image tag `vX.Y.Z-fork.N` are
+identical apart from the leading `v`.
 
-Increment the iteration on the same official baseline and reset it to `001`
-after importing a newer official release.
+The upstream Plus line publishes `vX.Y.Z+custom.NNN` (application
+`X.Y.Z+custom.NNN`, OCI tag `vX.Y.Z-custom.NNN`) because OCI tags do not
+support `+`; `NNN` there is a three-digit iteration from `001` to `999`.
+
+Increment the iteration on the same official baseline; each line keeps its own
+counter.
 
 ## Distribution and Repository Roles
 
 - `origin` is the custom repository:
-  `https://github.com/LuckyKuang/sub2api-plus.git`.
+  `https://github.com/v2-share/sub2api-plus.git`.
 - `upstream` is the official source:
   `https://github.com/Wei-Shaw/sub2api.git`.
 - Installation, update, rollback, and release links use the custom repository.
@@ -114,6 +118,7 @@ Local clones may need to add the `upstream` remote before an upstream sync.
 Preserve intentional Plus changes during merges and update this mapping in the
 same release-preparation change.
 
-Historical `-custom.NNN` Git naming was migrated to the canonical
-`+custom.NNN` form. OCI tags continue to use `-custom.NNN` because OCI tags do
-not support `+`.
+Historical `-custom.NNN` Git naming was migrated to the canonical `+custom.NNN`
+form on the Plus line. This fork's `-fork.N` tags are native SemVer
+prerelease tags, so GoReleaser marks them prerelease; the fork release
+workflow promotes the finished release to `latest` for the installer.

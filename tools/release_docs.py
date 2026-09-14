@@ -7,10 +7,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-TAG_TEXT = r"v\d+\.\d+\.\d+\+custom\.\d{3}"
-APPLICATION_VERSION_TEXT = r"\d+\.\d+\.\d+\+custom\.\d{3}"
-OCI_TAG_TEXT = r"v\d+\.\d+\.\d+-custom\.\d{3}"
-TAG_RE = re.compile(r"^v(\d+)\.(\d+)\.(\d+)\+custom\.(\d{3})$")
+TAG_TEXT = r"v\d+\.\d+\.\d+(?:\+custom\.\d{3}|-fork\.\d+)"
+APPLICATION_VERSION_TEXT = r"\d+\.\d+\.\d+(?:\+custom\.\d{3}|-fork\.\d+)"
+OCI_TAG_TEXT = r"v\d+\.\d+\.\d+(?:-custom\.\d{3}|-fork\.\d+)"
+TAG_RE = re.compile(r"^v(\d+)\.(\d+)\.(\d+)(?:\+custom\.(\d{3})|-fork\.(\d+))$")
 UPSTREAM_ROW_RE = re.compile(
     rf"^\|\s*`({TAG_TEXT})`\s*\|.*\|\s*([a-z]+)\s*\|$",
     re.MULTILINE,
@@ -29,7 +29,7 @@ APPLICATION_MAPPING_RE = re.compile(
     re.MULTILINE,
 )
 GHCR_IMAGE_RE = re.compile(
-    rf"(ghcr\.io/luckykuang/sub2api-plus:)({OCI_TAG_TEXT})()"
+    rf"(ghcr\.io/v2-share/sub2api-plus:)({OCI_TAG_TEXT})()"
 )
 APPLE_CONTAINER_SOURCE_IMAGE_RE = re.compile(
     rf"(this source revision is tagged sub2api-plus:)({OCI_TAG_TEXT})(; use that value)"
@@ -152,7 +152,15 @@ class ReleaseDocsError(ValueError):
 
 def version_key(tag: str) -> tuple[int, int, int, int] | None:
     match = TAG_RE.fullmatch(tag)
-    return tuple(map(int, match.groups())) if match else None
+    if match is None:
+        return None
+    iteration = match.group(4) or match.group(5)
+    return (
+        int(match.group(1)),
+        int(match.group(2)),
+        int(match.group(3)),
+        int(iteration),
+    )
 
 
 def parse_upstream_statuses(text: str) -> dict[str, str]:

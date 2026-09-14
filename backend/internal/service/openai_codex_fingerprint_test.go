@@ -694,7 +694,9 @@ func TestApplyCodexFingerprintPromptCacheKey_RewritesOnlyDefaultSession(t *testi
 	}
 	require.True(t, applyCodexFingerprintClientMetadata(body, ids))
 	assert.Equal(t, ids.sessionID, body["prompt_cache_key"], "prompt_cache_key 是 body session 默认值时必须改写为收敛 session")
-	assert.Equal(t, ids.sessionID, body["client_metadata"].(map[string]any)["session_id"])
+	clientMetadata, ok := body["client_metadata"].(map[string]any)
+	require.True(t, ok, "client_metadata must be an object")
+	assert.Equal(t, ids.sessionID, clientMetadata["session_id"])
 
 	explicit := map[string]any{
 		"client_metadata":  map[string]any{"session_id": "client-session"},

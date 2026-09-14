@@ -187,7 +187,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Validate release metadata before creating an annotated tag."
     )
-    parser.add_argument("--tag", required=True, help="vX.Y.Z+custom.NNN")
+    parser.add_argument("--tag", required=True, help="vX.Y.Z+custom.NNN or vX.Y.Z-fork.N")
     parser.add_argument("--notes-file", required=True, type=Path)
     parser.add_argument("--commit", default="HEAD")
     parser.add_argument("--remote", default="origin")
@@ -196,7 +196,10 @@ def main() -> int:
 
     tag_match = TAG_RE.fullmatch(args.tag)
     if not tag_match or tag_match.group(4) == "000":
-        parser.error("--tag must match vX.Y.Z+custom.NNN with NNN from 001 to 999")
+        parser.error(
+            "--tag must match vX.Y.Z+custom.NNN with NNN from 001 to 999 "
+            "or vX.Y.Z-fork.N with N from 1"
+        )
 
     notes_file = args.notes_file.expanduser().resolve()
     if not notes_file.is_file():

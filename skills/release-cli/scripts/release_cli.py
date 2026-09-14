@@ -23,7 +23,7 @@ if str(TOOLS) not in sys.path:
 import release_validation
 
 DEFAULT_REMOTE = "origin"
-EXPECTED_REPOSITORY = "LuckyKuang/sub2api-plus"
+EXPECTED_REPOSITORY = "v2-share/sub2api-plus"
 LOCAL_VALIDATION_CONTEXT = "sub2api/local-validation"
 FULL_PROFILE = "full"
 FINALIZATION_PROFILE = "release-finalization"

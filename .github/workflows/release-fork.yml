@@ -186,3 +186,14 @@ jobs:
           if [ "${#uploads[@]}" -gt 0 ]; then
             gh release upload "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" "${uploads[@]}"
           fi
+
+      # The fork line uses a -fork.N version suffix, which GoReleaser treats as
+      # SemVer prerelease metadata. Promote the finished release so
+      # /releases/latest resolves for the one-line installer.
+      - name: Publish as the repository's latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.metadata.outputs.tag }}
+        run: >-
+          gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY"
+          --prerelease=false --latest

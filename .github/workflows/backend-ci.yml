@@ -194,8 +194,15 @@ jobs:
           test -n "$VERSION"
           echo "goreleaser=v${VERSION#v}" >> "$GITHUB_OUTPUT"
           APP_VERSION="$(tr -d '[:space:]' < backend/cmd/server/VERSION)"
-          [[ "$APP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+\+custom\.[0-9]{3}$ ]]
-          echo "docker_tag_version=v${APP_VERSION/+custom./-custom.}" >> "$GITHUB_OUTPUT"
+          if [[ "$APP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+\+custom\.[0-9]{3}$ ]]; then
+            DOCKER_TAG_VERSION="v${APP_VERSION/+custom./-custom.}"
+          elif [[ "$APP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-fork\.[0-9]+$ ]]; then
+            DOCKER_TAG_VERSION="v${APP_VERSION}"
+          else
+            echo "Unsupported application version: $APP_VERSION" >&2
+            exit 1
+          fi
+          echo "docker_tag_version=$DOCKER_TAG_VERSION" >> "$GITHUB_OUTPUT"
       - name: Validate GoReleaser configuration
         if: steps.validation-profile.outputs.profile == 'full'
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7

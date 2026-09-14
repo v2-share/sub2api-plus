@@ -868,7 +868,7 @@ func TestLoadDefaultPricingReleaseConfig(t *testing.T) {
 	cfg, err := Load()
 	require.NoError(t, err)
 	require.Equal(t,
-		"https://github.com/luckykuang/sub2api-plus/releases/latest/download/model-pricing-manifest.json",
+		"https://github.com/v2-share/sub2api-plus/releases/latest/download/model-pricing-manifest.json",
 		cfg.Pricing.ManifestURL,
 	)
 	require.Empty(t, cfg.Pricing.RemoteURL)

@@ -24,7 +24,9 @@ EXPECTED_SECTIONS = (
 EXPECTED_CAPABILITIES = (
     "openai,anthropic,gemini,antigravity,grok,async-images,sora-unavailable"
 )
-EXPECTED_RELEASE_FORMAT = "vX.Y.Z+custom.NNN|vX.Y.Z-custom.NNN"
+EXPECTED_RELEASE_FORMAT = (
+    "vX.Y.Z+custom.NNN|vX.Y.Z-custom.NNN|vX.Y.Z-fork.N"
+)
 REQUIRED_LINKS = (
     "docs/README.md",
     "docs/RELEASING.md",

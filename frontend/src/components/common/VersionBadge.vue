@@ -643,9 +643,9 @@ import { useClipboard } from '@/composables/useClipboard'
 import Icon from '@/components/icons/Icon.vue'
 import { normalizeDisplayVersion, toDockerImageTag } from '@/utils/version'
 
-const GITHUB_REPO = 'luckykuang/sub2api-plus'
+const GITHUB_REPO = 'v2-share/sub2api-plus'
 // GHCR tags carry no "v" prefix and replace SemVer build metadata's + with -.
-const DOCKER_IMAGE = 'ghcr.io/luckykuang/sub2api-plus'
+const DOCKER_IMAGE = 'ghcr.io/v2-share/sub2api-plus'
 
 const { t } = useI18n()
 

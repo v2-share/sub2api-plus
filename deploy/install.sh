@@ -2,7 +2,7 @@
 #
 # Sub2API Plus Installation Script
 # Sub2API Plus 安装脚本
-# Usage: curl -sSL https://raw.githubusercontent.com/luckykuang/sub2api-plus/main/deploy/install.sh | bash
+# Usage: curl -sSL https://raw.githubusercontent.com/v2-share/sub2api-plus/main/deploy/install.sh | bash
 #
 
 set -e
@@ -31,7 +31,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
-GITHUB_REPO="luckykuang/sub2api-plus"
+GITHUB_REPO="v2-share/sub2api-plus"
 INSTALL_DIR="/opt/sub2api"
 SERVICE_NAME="sub2api"
 SERVICE_USER="sub2api"
@@ -530,7 +530,7 @@ github_api_curl() {
 
 # Get latest release version
 is_custom_release_tag() {
-    [[ "$1" =~ ^v[0-9]+\.[0-9]+\.[0-9]+\+custom\.[0-9]{3}$ ]]
+    [[ "$1" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(\+custom\.[0-9]{3}|-fork\.[0-9]+)$ ]]
 }
 
 get_latest_version() {
@@ -543,7 +543,7 @@ get_latest_version() {
         exit 1
     fi
     if ! is_custom_release_tag "$LATEST_VERSION"; then
-        print_error "Latest release must use vX.Y.Z+custom.NNN: $LATEST_VERSION"
+        print_error "Latest release must use vX.Y.Z+custom.NNN or vX.Y.Z-fork.N: $LATEST_VERSION"
         exit 1
     fi
 
@@ -588,7 +588,7 @@ validate_version() {
         version="v$version"
     fi
     if ! is_custom_release_tag "$version"; then
-        print_error "$(msg 'version_not_found'): $version (expected vX.Y.Z+custom.NNN)" >&2
+        print_error "$(msg 'version_not_found'): $version (expected vX.Y.Z+custom.NNN or vX.Y.Z-fork.N)" >&2
         exit 1
     fi
 
@@ -619,7 +619,7 @@ validate_version() {
 get_current_version() {
     if [ -f "$INSTALL_DIR/sub2api" ]; then
         # Use grep -E for better compatibility (works on macOS and Linux)
-        "$INSTALL_DIR/sub2api" --version 2>/dev/null | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+(\+custom\.[0-9]{3})?' | head -1 || echo "unknown"
+        "$INSTALL_DIR/sub2api" --version 2>/dev/null | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+(\+custom\.[0-9]{3}|-fork\.[0-9]+)?' | head -1 || echo "unknown"
     else
         echo "not_installed"
     fi
@@ -730,7 +730,7 @@ install_service() {
     cat > /etc/systemd/system/sub2api.service << EOF
 [Unit]
 Description=Sub2API Plus - AI API Gateway Platform
-Documentation=https://github.com/luckykuang/sub2api-plus
+Documentation=https://github.com/v2-share/sub2api-plus
 After=network.target postgresql.service redis.service
 Wants=postgresql.service redis.service
 
